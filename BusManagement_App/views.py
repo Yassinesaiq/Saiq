@@ -15,8 +15,9 @@ from .permissions import EstProprietaireOuLectureSeulement  # Importez votre per
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.http import HttpResponse
 from django.contrib.auth import logout
+from django.http import HttpResponse
+from django.shortcuts import render
 
 
 class BusListView(LoginRequiredMixin, ListView):
@@ -288,3 +289,11 @@ def user_logout(request):
 def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
+
+@login_required
+def user_dashboard(request):
+    # Récupérez tous les bus de la base de données
+    bus_list = Bus.objects.all()
+    # Passez la liste des bus au template
+    context = {'bus_list': bus_list}
+    return render(request, 'BusManagement_App/user_dashboard.html', context)
