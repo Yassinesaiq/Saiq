@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de Bord Directeur</title>
+</head>
+<body>
+    <h1>Tableau de Bord Directeur</h1>
+
+    <section>
+        <h2>Parents</h2>
+        <!-- Liste des parents -->
+       <a href="{% url 'ajouter_parent' %}"><button>Ajouter un Parent</button></a>
+    </section>
+
+    <section>
+        <h2>Bus</h2>
+        <!-- Liste des bus -->
+        <a href="{% url 'ajouter_bus' %}"><button>Ajouter un Bus</button></a>
+    </section>
+
+    <section>
+        <h2>Chauffeurs</h2>
+        <!-- Liste des chauffeurs -->
+       <a href="{% url 'ajouter_chauffeur' %}"><button>Ajouter un Chauffeur</button></a>
+    </section>
+
+</body>
+</html>
