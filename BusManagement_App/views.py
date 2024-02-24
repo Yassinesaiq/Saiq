@@ -15,9 +15,8 @@ from .permissions import EstProprietaireOuLectureSeulement  # Importez votre per
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.contrib.auth import logout
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.contrib.auth import logout
 
 
 class BusListView(LoginRequiredMixin, ListView):
@@ -217,46 +216,7 @@ class StudentViewSet(viewsets.ModelViewSet):
 
 class AdminViewSet(viewsets.ModelViewSet):
     queryset = Admin.objects.all()
-    serialzer_class = AdmintSerializer
-
-
-def create_parent(request):
-    if request.method == 'POST':
-        # Récupérer les informations du formulaire
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')  # Supposons que vous ayez un champ email
-        phone_number = request.POST.get('phone_number')
-        address = request.POST.get('address')
-
-        # Créer un objet User
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.save()
-
-        # Créer un objet Parent lié à l'utilisateur
-        parent = Parent(user=user, phone_number=phone_number, address=address)
-        parent.save()
-
-        return HttpResponse("Parent et utilisateur créés avec succès.")
-
-
-class SchoolDirector(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    school_name = models.CharField(max_length=255)
-    job_title = models.CharField(max_length=255)
-    work_phone = models.CharField(max_length=20)
-    school_address = models.TextField()
-    department = models.CharField(max_length=255, null=True, blank=True)
-    start_date = models.DateField()
-    biography = models.TextField(null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='directors', null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.school_name}"
+    serializer_class = AdminSerializer
 
 
 
@@ -328,17 +288,3 @@ def user_logout(request):
 def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
-
-def parent_dashboard(request):
-    # Assurez-vous que l'utilisateur est un parent
-    if not hasattr(request.user, 'parent'):
-        return HttpResponse("Vous n'avez pas l'autorisation d'accéder à cette page.")
-
-    # Récupérez les informations de l'enfant associé au parent
-    student_info = Student.objects.filter(parent=request.user.parent)
-
-    # Préparez le contexte avec les informations de l'enfant
-    context = {'student_info': student_info}
-
-    # Rendez le template avec le contexte
-    return render(request, 'BusManagement_App/parent_dashboard.html', context)
