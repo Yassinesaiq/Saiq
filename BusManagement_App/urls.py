@@ -10,6 +10,8 @@ urlpatterns = [
     path('login/', user_login, name='login'),
     path('logout/', user_logout, name='logout'),
     path('dashboard/parent/', parent_dashboard, name='parent_dashboard'),
+    path('dashboard/director/', views.director_dashboard, name='director_dashboard'),
+
   
 ]
 
