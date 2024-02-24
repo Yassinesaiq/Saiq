@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .permissions import EstProprietaireOuLectureSeulement  # Importez votre permission personnalisée
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
@@ -288,3 +288,102 @@ def user_logout(request):
 def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
+def login_parent(request):
+    # Logique de connexion pour le parent
+    if request.method == 'POST':
+        # Processus de connexion
+        return redirect('parent_dashboard')
+    return render(request, 'login_parent.html')
+
+def login_director(request):
+    # Logique de connexion pour le directeur
+    if request.method == 'POST':
+        # Processus de connexion
+        return redirect('director_dashboard')
+    return render(request, 'login_director.html')
+
+@login_required
+def parent_dashboard(request):
+    try:
+        parent = request.user.parent
+        students = Student.objects.filter(parent=parent)
+    except Parent.DoesNotExist:
+        students = None
+
+    return render(request, 'parent_dashboard.html', {'students': students})
+
+@login_required
+def director_dashboard(request):
+    # Assurez-vous que l'utilisateur est un directeur
+    if not request.user.groups.filter(name='Directeurs').exists():
+        return HttpResponse("Accès refusé.")
+
+    # Logique pour récupérer les informations nécessaires
+    parents = Parent.objects.all()
+    buses = Bus.objects.all()
+    # Plus de logique selon les besoins
+
+    return render(request, 'director_dashboard.html', {'parents': parents, 'buses': buses})
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import ParentForm  # Assurez-vous d'avoir un formulaire ParentForm
+
+@login_required
+def ajouter_parent(request):
+    if request.method == 'POST':
+        form = ParentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('parent_dashboard')  # Redirigez vers le tableau de bord parent
+    else:
+        form = ParentForm()
+    return render(request, 'ajouter_parent.html', {'form': form})
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import BusForm  # Assurez-vous d'avoir un formulaire BusForm
+
+@login_required
+def ajouter_bus(request):
+    if request.method == 'POST':
+        form = BusForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('director_dashboard')  # Redirigez vers le tableau de bord directeur
+    else:
+        form = BusForm()
+    return render(request, 'ajouter_bus.html', {'form': form})
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import ChauffeurForm  # Assurez-vous d'avoir un formulaire ChauffeurForm
+
+@login_required
+def ajouter_chauffeur(request):
+    if request.method == 'POST':
+        form = ChauffeurForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('director_dashboard')  # Redirigez vers le tableau de bord directeur
+    else:
+        form = ChauffeurForm()
+    return render(request, 'ajouter_chauffeur.html', {'form': form})
+
+
+
+def est_directeur(user):
+    return user.groups.filter(name='Directeurs').exists()  # Assurez-vous que le groupe 'Directeurs' existe
+
+@login_required
+@user_passes_test(est_directeur)
+def vue_directeur(request):
+    # Logique de la vue pour les directeurs
+    return render(request, 'directeur_dashboard.html')
+
+def est_parent(user):
+    return user.groups.filter(name='Parents').exists()  # Assurez-vous que le groupe 'Parents' existe
+
+@login_required
+@user_passes_test(est_parent)
+def vue_parent(request):
+    # Logique de la vue pour les parents
+    return render(request, 'parent_dashboard.html')
