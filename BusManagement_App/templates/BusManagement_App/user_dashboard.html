@@ -67,14 +67,12 @@
         <h2>Messages Récents</h2>
         <!-- Affichez les derniers messages ici -->
 
-        <h2>Liste des Bus</h2>
-<ul>
-{% for bus in bus_list %}
-    <li>{{ bus.number }} - {{ bus.model }} (Capacité: {{ bus.capacity }})</li>
-{% empty %}
-    <li>Aucun bus disponible.</li>
-{% endfor %}
-</ul>
+        <div class="dashboard-content">
+            {% block content %}
+            <!-- Le contenu spécifique à chaque page sera inséré ici -->
+            {% endblock %}
+        </div>
+        
 
     </div>
     <a href="{% url 'logout' %}">Se déconnecter</a>

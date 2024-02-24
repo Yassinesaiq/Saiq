@@ -1,10 +1,19 @@
-{% extends "user_dashboard.html" %}
+{% extends "BusManagement_App/user_dashboard.html" %}
 
 {% block content %}
 <h2>Ajouter un Parent</h2>
+
+{% if form.errors %}
+<div class="alert alert-danger" role="alert">
+    Veuillez corriger les erreurs ci-dessous.
+</div>
+{% endif %}
+
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Soumettre</button>
+    <button type="submit" class="btn btn-primary">Soumettre</button>
+    <a href="{% url 'parent_dashboard' %}" class="btn btn-secondary">Annuler</a>
 </form>
+
 {% endblock %}

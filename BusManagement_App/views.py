@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .models import Bus, Driver, Route, Parent, Student, Admin
+from .models import Bus, Driver, Route, Student, Admin
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from rest_framework import viewsets
-from .serializers import BusSerializer, DriverSerializer, RouteSerializer, ParentSerializer, StudentSerializer, AdminSerializer
+from .serializers import BusSerializer, DriverSerializer, RouteSerializer, StudentSerializer, AdminSerializer
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework import status
@@ -17,6 +17,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth import logout
+from .forms import ParentForm 
 
 
 class BusListView(LoginRequiredMixin, ListView):
@@ -107,34 +108,7 @@ class RouteDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('route_list')
     permission_required = 'app.delete_route'
 
-class ParentListView(LoginRequiredMixin, ListView):
-    model = Parent
-    context_object_name = 'parents'
-    template_name = 'parent/parent_list.html'
 
-class ParentDetailView(LoginRequiredMixin, DetailView):
-    model = Parent
-    context_object_name = 'parent'
-    template_name = 'parent/parent_detail.html'
-
-class ParentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    model = Parent
-    fields = ['user', 'phone_number', 'address']
-    template_name = 'parent/parent_form.html'
-    permission_required = 'app.add_parent'
-
-class ParentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
-    model = Parent
-    fields = ['user', 'phone_number', 'address']
-    template_name = 'parent/parent_form.html'
-    permission_required = 'app.change_parent'
-
-class ParentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
-    model = Parent
-    context_object_name = 'parent'
-    template_name = 'parent/parent_confirm_delete.html'
-    success_url = reverse_lazy('parent_list')
-    permission_required = 'app.delete_parent'
 class StudentListView(LoginRequiredMixin, ListView):
     model = Student
     context_object_name = 'students'
@@ -147,13 +121,13 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
 
 class StudentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Student
-    fields = ['first_name', 'last_name', 'grade', 'parent']
+    fields = ['first_name', 'last_name', 'grade']
     template_name = 'student/student_form.html'
     permission_required = 'app.add_student'
 
 class StudentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Student
-    fields = ['first_name', 'last_name', 'grade', 'parent']
+    fields = ['first_name', 'last_name', 'grade']
     template_name = 'student/student_form.html'
     permission_required = 'app.change_student'
 
@@ -206,9 +180,6 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
 
-class ParentViewSet(viewsets.ModelViewSet):
-    queryset = Parent.objects.all()
-    serializer_class = ParentSerializer
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
@@ -253,10 +224,6 @@ class RouteViewSet(viewsets.ModelViewSet):
     serializer_class = RouteSerializer
     permission_classes = [IsAuthenticated]
 
-class ParentViewSet(viewsets.ModelViewSet):
-    queryset = Parent.objects.all()
-    serializer_class = ParentSerializer
-    permission_classes = [IsAuthenticated]
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
@@ -289,28 +256,48 @@ def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
 def login_parent(request):
-    # Logique de connexion pour le parent
     if request.method == 'POST':
-        # Processus de connexion
-        return redirect('parent_dashboard')
-    return render(request, 'login_parent.html')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.groups.filter(name='Parents').exists():
+            login(request, user)
+            return redirect('parent_dashboard')
+        else:
+            return HttpResponse("Nom d'utilisateur ou mot de passe incorrect, ou vous n'avez pas les droits de Parent.")
+    return render(request, 'BusManagement_App/login_parent.html')
 
-def login_director(request):
-    # Logique de connexion pour le directeur
-    if request.method == 'POST':
-        # Processus de connexion
-        return redirect('director_dashboard')
-    return render(request, 'login_director.html')
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 @login_required
 def parent_dashboard(request):
-    try:
-        parent = request.user.parent
-        students = Student.objects.filter(parent=parent)
-    except Parent.DoesNotExist:
-        students = None
+    # Ici, vous pouvez ajouter toute logique spécifique nécessaire pour récupérer
+    # les informations que vous voulez afficher dans le tableau de bord des parents.
+    # Par exemple, récupérer les enfants associés au parent, les messages, les annonces, etc.
 
-    return render(request, 'parent_dashboard.html', {'students': students})
+    context = {
+        # 'enfants': enfants,  # Supposons que vous ayez une liste d'enfants associés
+        # 'annonces': annonces,  # Supposons que vous ayez des annonces à afficher
+        # Ajoutez ici d'autres contextes si nécessaire
+    }
+
+    return render(request, 'BusManagement_App/parent_dashboard.html', context)
+
+
+def login_director(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.groups.filter(name='Directeurs').exists():
+            login(request, user)
+            return redirect('director_dashboard')
+        else:
+            return HttpResponse("Nom d'utilisateur ou mot de passe incorrect, ou vous n'avez pas les droits de directeur.")
+    return render(request, 'BusManagement_App/login_director.html')
+
 
 @login_required
 def director_dashboard(request):
@@ -319,25 +306,33 @@ def director_dashboard(request):
         return HttpResponse("Accès refusé.")
 
     # Logique pour récupérer les informations nécessaires
-    parents = Parent.objects.all()
     buses = Bus.objects.all()
     # Plus de logique selon les besoins
 
-    return render(request, 'director_dashboard.html', {'parents': parents, 'buses': buses})
+    return render(request, 'BusManagement_App/director_dashboard.html', {'buses': buses})
+ # Assurez-vous d'avoir un formulaire ParentForm
+
+from django.contrib.auth.models import User, Group
+from .forms import ParentForm
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import ParentForm  # Assurez-vous d'avoir un formulaire ParentForm
 
 @login_required
 def ajouter_parent(request):
     if request.method == 'POST':
         form = ParentForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('parent_dashboard')  # Redirigez vers le tableau de bord parent
+            # Créer l'utilisateur et l'ajouter au groupe 'Parents'
+            user = form.save()
+
+            # Rediriger vers le tableau de bord des parents
+            return redirect('parent_dashboard')
     else:
         form = ParentForm()
-    return render(request, 'ajouter_parent.html', {'form': form})
+
+    # Afficher le formulaire
+    return render(request, 'BusManagement_App/ajouter_parent.html', {'form': form})
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import BusForm  # Assurez-vous d'avoir un formulaire BusForm
@@ -351,7 +346,7 @@ def ajouter_bus(request):
             return redirect('director_dashboard')  # Redirigez vers le tableau de bord directeur
     else:
         form = BusForm()
-    return render(request, 'ajouter_bus.html', {'form': form})
+    return render(request, 'BusManagement_App/ajouter_bus.html', {'form': form})
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -366,7 +361,7 @@ def ajouter_chauffeur(request):
             return redirect('director_dashboard')  # Redirigez vers le tableau de bord directeur
     else:
         form = ChauffeurForm()
-    return render(request, 'ajouter_chauffeur.html', {'form': form})
+    return render(request, 'BusManagement_App/ajouter_chauffeur.html', {'form': form})
 
 
 
@@ -377,7 +372,7 @@ def est_directeur(user):
 @user_passes_test(est_directeur)
 def vue_directeur(request):
     # Logique de la vue pour les directeurs
-    return render(request, 'directeur_dashboard.html')
+    return render(request, 'BusManagement_App/directeur_dashboard.html')
 
 def est_parent(user):
     return user.groups.filter(name='Parents').exists()  # Assurez-vous que le groupe 'Parents' existe
@@ -386,4 +381,7 @@ def est_parent(user):
 @user_passes_test(est_parent)
 def vue_parent(request):
     # Logique de la vue pour les parents
-    return render(request, 'parent_dashboard.html')
+    return render(request, 'BusManagement_App/parent_dashboard.html')
+
+def home(request):
+    return render(request, 'BusManagement_App/home.html')

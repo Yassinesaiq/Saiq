@@ -1,5 +1,5 @@
 from django.contrib import admin
-from BusManagement_App.models import Bus, Driver, Route, Parent, Student, Admin
+from BusManagement_App.models import Bus, Driver, Route,Student, Admin
 
 class BusAdmin(admin.ModelAdmin):
     list_display = ('number', 'capacity', 'model')
@@ -17,14 +17,10 @@ class RouteAdmin(admin.ModelAdmin):
     )
     filter_horizontal = ('buses',)
 
-class ParentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'address')
-    search_fields = ('user__first_name', 'user__last_name', 'phone_number')
-
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'grade', 'parent')
-    list_filter = ('grade', 'parent')
-    search_fields = ('first_name', 'last_name', 'grade', 'parent__user__first_name', 'parent__user__last_name')
+    list_display = ('first_name', 'last_name', 'grade')
+    list_filter = ('grade',)
+    search_fields = ('first_name', 'last_name', 'grade')
 
 class AdminAdmin(admin.ModelAdmin):
     list_display = ('user', 'job_title')
@@ -34,6 +30,5 @@ class AdminAdmin(admin.ModelAdmin):
 admin.site.register(Bus, BusAdmin)
 admin.site.register(Driver, DriverAdmin)
 admin.site.register(Route, RouteAdmin)
-admin.site.register(Parent, ParentAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Admin, AdminAdmin)

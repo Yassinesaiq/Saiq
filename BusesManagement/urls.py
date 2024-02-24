@@ -10,7 +10,6 @@ router = DefaultRouter()
 router.register(r'buses', views.BusViewSet)
 router.register(r'drivers', views.DriverViewSet)
 router.register(r'routes', views.RouteViewSet)
-router.register(r'parents', views.ParentViewSet)
 router.register(r'students', views.StudentViewSet)
 router.register(r'admins', views.AdminViewSet)
 
@@ -42,12 +41,6 @@ urlpatterns = [
     path('route/<int:pk>/edit/', views.RouteUpdateView.as_view(), name='route_edit'),
     path('route/<int:pk>/delete/', views.RouteDeleteView.as_view(), name='route_delete'),
 
-    # URLs pour les Parents
-    path('parents/', views.ParentListView.as_view(), name='parent_list'),
-    path('parent/<int:pk>/', views.ParentDetailView.as_view(), name='parent_detail'),
-    path('parent/add/', views.ParentCreateView.as_view(), name='parent_add'),
-    path('parent/<int:pk>/edit/', views.ParentUpdateView.as_view(), name='parent_edit'),
-    path('parent/<int:pk>/delete/', views.ParentDeleteView.as_view(), name='parent_delete'),
 
     # URLs pour les Étudiants
     path('students/', views.StudentListView.as_view(), name='student_list'),
