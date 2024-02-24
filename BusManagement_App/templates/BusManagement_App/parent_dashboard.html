@@ -1,0 +1,14 @@
+{% extends "user_dashboard.html" %}
+
+{% block content %}
+<h2>Tableau de Bord Parent</h2>
+{% if students %}
+    <h3>Enfants et Informations de Transport</h3>
+    {% for student in students %}
+        <p>Nom de l'Enfant: {{ student.name }}</p>
+        <!-- Affichez ici les informations supplémentaires comme les détails du bus -->
+    {% endfor %}
+{% else %}
+    <p>Aucun enfant enregistré.</p>
+{% endif %}
+{% endblock %}
