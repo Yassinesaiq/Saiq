@@ -17,7 +17,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth import logout
+<<<<<<< Updated upstream
 from .forms import ParentForm 
+=======
+>>>>>>> Stashed changes
 
 
 class BusListView(LoginRequiredMixin, ListView):
@@ -255,6 +258,7 @@ def user_logout(request):
 def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
+<<<<<<< Updated upstream
 def login_parent(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -385,3 +389,5 @@ def vue_parent(request):
 
 def home(request):
     return render(request, 'BusManagement_App/home.html')
+=======
+>>>>>>> Stashed changes
