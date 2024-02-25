@@ -1,0 +1,11 @@
+{% extends 'BusManagement_App/Base.html' %}
+
+{% block content %}
+  <h2>Liste</h2>
+  <a href="{% url 'add_schedule' %}">Ajouter un nouvel horaire</a> <!-- Changez l'URL en fonction du modèle -->
+  <ul>
+    {% for schedule in object_list %} <!-- Changez la variable en fonction du modèle -->
+      <li>{{ schedule }} - <a href="{% url 'update_schedule' schedule.pk %}">Modifier</a> - <a href="{% url 'delete_schedule' schedule.pk %}">Supprimer</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}

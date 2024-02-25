@@ -2,7 +2,7 @@ from django import forms
 from .models import  Bus, Driver
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-
+from .models import SafetyCheck,SecondaryAddressRequest,Schedule, Tarif
 
 class ParentForm(forms.Form):
     username = forms.CharField(max_length=150, required=True)
@@ -45,3 +45,24 @@ class ChauffeurForm(forms.ModelForm):
     class Meta:
         model = Driver
         fields = ['first_name', 'last_name', 'license_number', 'bus']
+
+
+class ScheduleForm(forms.ModelForm):
+    class Meta:
+        model = Schedule
+        fields = '__all__'
+
+class TarifForm(forms.ModelForm):
+    class Meta:
+        model = Tarif
+        fields = '__all__'
+
+class SafetyCheckForm(forms.ModelForm):
+    class Meta:
+        model = SafetyCheck
+        fields = ['bus', 'check_date', 'is_passed']
+
+class SecondaryAddressRequestForm(forms.ModelForm):
+    class Meta:
+        model = SecondaryAddressRequest
+        fields = ['student', 'address', 'is_approved']

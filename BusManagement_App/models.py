@@ -32,10 +32,11 @@ class Student(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     grade = models.CharField(max_length=10)
+    is_eligible_for_transport = models.BooleanField(default=False)
 
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} - Grade: {self.grade}"
+        return f"{self.first_name} {self.last_name} - Grade: {self.grade} - à Droit au Transport: {self.is_eligible_for_transport} "
 
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -43,3 +44,36 @@ class Admin(models.Model):
 
     def __str__(self):
         return f"Admin {self.user.first_name} {self.user.last_name} - Job Title: {self.job_title}"
+    
+class Schedule(models.Model):
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='schedules')
+    departure_time = models.TimeField()
+    arrival_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.route.name} - Departure: {self.departure_time}, Arrival: {self.arrival_time}"
+
+
+class Tarif(models.Model):
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='tarifs')
+    montant = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self):
+        return f"tarif pour {self.route.name}: {self.montant}"
+    
+class SecondaryAddressRequest(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='secondary_address_requests')
+    address = models.CharField(max_length=255)
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Request by {self.student.first_name} for address {self.address}"
+
+class SafetyCheck(models.Model):
+    bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name='safety_checks')
+    check_date = models.DateField()
+    is_passed = models.BooleanField(default=True)
+
+    def __str__(self):
+        status = "passed" if self.is_passed else "failed"
+        return f"Safety check for {self.bus.number} on {self.check_date}: {status}"

@@ -17,10 +17,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth import logout
-<<<<<<< Updated upstream
 from .forms import ParentForm 
-=======
->>>>>>> Stashed changes
+from .models import SafetyCheck,SecondaryAddressRequest
+from .forms import SafetyCheckForm,SecondaryAddressRequestForm
+from .models import Schedule, Tarif
+from .forms import ScheduleForm, TarifForm
 
 
 class BusListView(LoginRequiredMixin, ListView):
@@ -258,7 +259,6 @@ def user_logout(request):
 def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
-<<<<<<< Updated upstream
 def login_parent(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -389,5 +389,98 @@ def vue_parent(request):
 
 def home(request):
     return render(request, 'BusManagement_App/home.html')
-=======
->>>>>>> Stashed changes
+
+
+# Vues pour Schedule
+class ScheduleCreateView(CreateView):
+    model = Schedule
+    form_class = ScheduleForm
+    success_url = reverse_lazy('list_schedules')
+    template_name = 'schedules/schedule_form.html'
+
+class ScheduleListView(ListView):
+    model = Schedule
+    context_object_name = 'schedules'
+    template_name = 'schedules/schedule_list.html'
+
+class ScheduleUpdateView(UpdateView):
+    model = Schedule
+    form_class = ScheduleForm
+    success_url = reverse_lazy('list_schedules')
+    template_name = 'schedules/schedule_form.html'
+
+class ScheduleDeleteView(DeleteView):
+    model = Schedule
+    success_url = reverse_lazy('list_schedules')
+    template_name = 'schedules/schedule_confirm_delete.html'
+
+# Vues pour Tarif
+class TarifCreateView(CreateView):
+    model = Tarif
+    form_class = TarifForm
+    success_url = reverse_lazy('list_tarifs')
+    template_name = 'tarifs/tarif_form.html'
+
+class TarifListView(ListView):
+    model = Tarif
+    context_object_name = 'tarifs'
+    template_name = 'tarifs/tarif_list.html'
+
+class TarifUpdateView(UpdateView):
+    model = Tarif
+    form_class = TarifForm
+    success_url = reverse_lazy('list_tarifs')
+    template_name = 'tarifs/tarif_form.html'
+
+class TarifDeleteView(DeleteView):
+    model = Tarif
+    success_url = reverse_lazy('list_tarifs')
+    template_name = 'tarifs/tarif_confirm_delete.html'
+
+
+class SafetyCheckCreateView(CreateView):
+    model = SafetyCheck
+    form_class = SafetyCheckForm
+    template_name = 'safetycheck_form.html'
+    success_url = '/safetychecks/'
+
+class SafetyCheckListView(ListView):
+    model = SafetyCheck
+    context_object_name = 'safety_checks'
+    template_name = 'safetycheck_list.html'
+
+
+class SafetyCheckUpdateView(UpdateView):
+    model = SafetyCheck
+    form_class = SafetyCheckForm
+    template_name = 'safetycheck_update_form.html'
+    success_url = reverse_lazy('list_safety_checks')  # Assurez-vous que ce nom d'URL est défini dans votre urls.py
+
+
+class SafetyCheckDeleteView(DeleteView):
+    model = SafetyCheck
+    template_name = 'safetycheck_confirm_delete.html'
+    success_url = reverse_lazy('list_safety_checks')  # Assurez-vous que ce nom d'URL est défini dans votre urls.py
+
+
+class SecondaryAddressRequestCreateView(CreateView):
+    model = SecondaryAddressRequest
+    form_class = SecondaryAddressRequestForm
+    template_name = 'secondaryaddressrequest_form.html'
+    success_url = '/secondary-address-requests/'
+
+class SecondaryAddressRequestListView(ListView):
+    model = SecondaryAddressRequest
+    context_object_name = 'secondary_address_requests'
+    template_name = 'secondaryaddressrequest_list.html'
+
+class SecondaryAddressRequestUpdateView(UpdateView):
+    model = SecondaryAddressRequest
+    form_class = SecondaryAddressRequestForm
+    template_name = 'secondaryaddressrequest_update_form.html'
+    success_url = reverse_lazy('list_secondary_address_requests')
+
+class SecondaryAddressRequestDeleteView(DeleteView):
+    model = SecondaryAddressRequest
+    template_name = 'secondaryaddressrequest_confirm_delete.html'
+    success_url = reverse_lazy('list_secondary_address_requests')  # Assurez-vous que ce nom d'URL est défini dans votre urls.py

@@ -1,0 +1,10 @@
+{% extends 'BusManagement_App/Base.html' %}
+
+{% block content %}
+  <h2>{% if object %}Modifier{% else %}Ajouter{% endif %}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Sauvegarder</button>
+  </form>
+{% endblock %}

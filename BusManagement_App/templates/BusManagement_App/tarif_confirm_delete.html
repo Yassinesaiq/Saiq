@@ -1,0 +1,11 @@
+{% extends 'BusManagement_App/Base.html' %}
+
+{% block content %}
+  <h2>Confirmer la suppression</h2>
+  <p>Êtes-vous sûr de vouloir supprimer le tarif pour la route "{{ object.route }}" d'un montant de "{{ object.montant }} €" ?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirmer</button>
+    <a href="{% url 'list_tarifs' %}">Annuler</a>
+  </form>
+{% endblock %}

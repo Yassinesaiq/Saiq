@@ -1,4 +1,4 @@
-{% extends "BusManagement_App/user_dashboard.html" %}
+{% extends "BusManagement_App/Base.html" %}
 
 {% block content %}
 <h2>Tableau de Bord Parent</h2>
@@ -11,4 +11,6 @@
 {% else %}
     <p>Aucun enfant enregistré.</p>
 {% endif %}
+ <a href="{% url 'list_schedules' %}" class="btn btn-primary">Voir les horaires</a>
 {% endblock %}
+
