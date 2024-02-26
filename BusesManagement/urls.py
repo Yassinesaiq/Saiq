@@ -4,7 +4,7 @@ from django.urls import path, include, re_path
 from BusManagement_App import views
 from rest_framework.routers import DefaultRouter
 from BusManagement_App.views import SignupView 
-from BusManagement_App.views import user_login 
+
 
 router = DefaultRouter()
 router.register(r'buses', views.BusViewSet)
@@ -19,7 +19,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('signup/', SignupView.as_view(), name='signup'),
     path('BusManagement_App/', include('BusManagement_App.urls')),
-    path('login/', user_login, name='login'),
     # URLs pour les Bus
     path('buses/', views.BusListView.as_view(), name='bus_list'),
     path('bus/<int:pk>/', views.BusDetailView.as_view(), name='bus_detail'),

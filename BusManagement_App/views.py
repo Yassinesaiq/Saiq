@@ -239,17 +239,6 @@ class AdminViewSet(viewsets.ModelViewSet):
     serializer_class = AdminSerializer
     permission_classes = [IsAuthenticated]    
 
-def user_login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('user_dashboard')
-        else:
-            return HttpResponse("Votre nom d'utilisateur ou mot de passe est incorrect.")
-    return render(request, 'BusManagement_App/login.html')
 
 def user_logout(request):
     logout(request)
@@ -259,17 +248,6 @@ def user_logout(request):
 def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
-def login_parent(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None and user.groups.filter(name='Parents').exists():
-            login(request, user)
-            return redirect('parent_dashboard')
-        else:
-            return HttpResponse("Nom d'utilisateur ou mot de passe incorrect, ou vous n'avez pas les droits de Parent.")
-    return render(request, 'BusManagement_App/login_parent.html')
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -289,19 +267,23 @@ def parent_dashboard(request):
 
     return render(request, 'BusManagement_App/parent_dashboard.html', context)
 
-
-def login_director(request):
+def login_user(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        if user is not None and user.groups.filter(name='Directeurs').exists():
-            login(request, user)
-            return redirect('director_dashboard')
+        if user is not None:
+            if user.groups.filter(name='Directeurs').exists():
+                login(request, user)
+                return redirect('director_dashboard')
+            elif user.groups.filter(name='Parents').exists():
+                login(request, user)
+                return redirect('parent_dashboard')
+            else:
+                return HttpResponse("Vous n'avez pas les droits nécessaires.")
         else:
-            return HttpResponse("Nom d'utilisateur ou mot de passe incorrect, ou vous n'avez pas les droits de directeur.")
-    return render(request, 'BusManagement_App/login_director.html')
-
+            return HttpResponse("Nom d'utilisateur ou mot de passe incorrect.")
+    return render(request, 'BusManagement_App/home.html')
 
 @login_required
 def director_dashboard(request):

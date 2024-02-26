@@ -11,8 +11,14 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
-    <h2 class="mb-3">Bienvenue, veuillez sélectionner votre rôle :</h2>
-    <a href="{% url 'login_parent' %}" class="btn btn-primary mr-2">Connexion Parent</a>
-    <a href="{% url 'login_director' %}" class="btn btn-secondary">Connexion Directeur</a>
+    <h2 class="mb-3">Bienvenue,dans l'app BusManagement :</h2>
+    <form action="{% url 'login_user' %}" method="post">
+        {% csrf_token %}
+        <label for="username">Nom d'utilisateur:</label>
+        <input type="text" name="username" id="username" required>
+        <label for="password">Mot de passe:</label>
+        <input type="password" name="password" id="password" required>
+        <button type="submit">Connexion</button>
+    </form>
 </body>
 </html>
