@@ -123,11 +123,34 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'student'
     template_name = 'student/student_detail.html'
 
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+
 class StudentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Student
-    fields = ['first_name', 'last_name', 'grade']
+    fields = ['first_name', 'last_name', 'grade', 'address', 'distance_to_school', 'has_special_needs', 'temporary_disability']
     template_name = 'student/student_form.html'
     permission_required = 'app.add_student'
+    
+    def form_valid(self, form):
+        # Instance de l'élève sans sauvegarde en base de données
+        self.object = form.save(commit=False)
+        # Calcul de l'éligibilité
+        self.object.check_eligibility()
+        if self.object.is_eligible_for_transport:
+            # L'élève est éligible, on peut sauvegarder
+            self.object.save()
+            return super(StudentCreateView, self).form_valid(form)
+        else:
+            # L'élève n'est pas éligible, on ne sauvegarde pas et on affiche un message
+            messages.error(self.request, "Cet élève n'est pas éligible pour le transport scolaire et n'a pas été enregistré.")
+            return redirect('student_add')  # Remplacez 'student_add' par le nom de votre URL pour ajouter un élève
+
+    def get_success_url(self):
+        # URL de redirection après une création réussie
+        return reverse_lazy('student_list')  # Remplacez 'student_list' par le nom de votre URL de liste d'élèves
+
 
 class StudentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Student

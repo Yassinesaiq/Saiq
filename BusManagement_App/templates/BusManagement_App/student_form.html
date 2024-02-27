@@ -1,0 +1,10 @@
+{% extends "base.html" %} {# Assurez-vous que ce fichier étend un template de base existant dans votre projet. #}
+
+{% block content %}
+  <h2>Ajouter un élève</h2>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }} {# Affiche les champs du formulaire. Vous pouvez personnaliser l'affichage des champs si nécessaire. #}
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+  </form>
+{% endblock %}

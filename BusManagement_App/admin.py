@@ -18,8 +18,8 @@ class RouteAdmin(admin.ModelAdmin):
     filter_horizontal = ('buses',)
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'grade')
-    list_filter = ('grade',)
+    list_display = ('first_name', 'last_name', 'grade','is_eligible_for_transport')
+    list_filter = ('grade','is_eligible_for_transport')
     search_fields = ('first_name', 'last_name', 'grade')
 
 class AdminAdmin(admin.ModelAdmin):
