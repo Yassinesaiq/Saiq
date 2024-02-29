@@ -1,13 +1,18 @@
 from django import forms
-from .models import  Bus, Driver
+from .models import  Bus, Driver,Parent
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from .models import SafetyCheck,SecondaryAddressRequest,Schedule, Tarif
 
-class ParentForm(forms.Form):
+class ParentForm(forms.ModelForm):
+    # Ajouter les champs utilisateur au ModelForm
     username = forms.CharField(max_length=150, required=True)
     email = forms.EmailField(required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
+
+    class Meta:
+        model = Parent
+        fields = ['first_name', 'last_name', 'CNIE', 'Enfants', 'username', 'email', 'password']
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -15,13 +20,15 @@ class ParentForm(forms.Form):
             raise ValidationError('A user with that username already exists.')
         return username
 
-    def save(self):
+    def save(self, commit=True):
+        user_data = {
+            'username': self.cleaned_data['username'],
+            'email': self.cleaned_data['email'],
+            'password': self.cleaned_data['password'],
+        }
+
         # Créer l'utilisateur
-        user = User.objects.create_user(
-            username=self.cleaned_data['username'],
-            email=self.cleaned_data['email'],
-            password=self.cleaned_data['password'],
-        )
+        user = User.objects.create_user(**user_data)
 
         # Récupérer ou créer le groupe 'Parents'
         group, created = Group.objects.get_or_create(name='Parents')
@@ -32,9 +39,15 @@ class ParentForm(forms.Form):
         # Sauvegarder l'utilisateur
         user.save()
 
-        # Si vous avez d'autres actions à effectuer pour le profil du parent, faites-les ici
+        # Sauvegarder l'instance de Parent sans commit pour définir l'utilisateur manuellement
+        parent = super().save(commit=False)
+        parent.user = user  # Supposons que vous avez un champ 'user' dans votre modèle Parent pour lier User à Parent
+        if commit:
+            parent.save()
+            self.save_m2m()  # Nécessaire pour sauvegarder les relations ManyToMany si vous en avez
 
-        return user
+        return parent
+
 
 class BusForm(forms.ModelForm):
     class Meta:

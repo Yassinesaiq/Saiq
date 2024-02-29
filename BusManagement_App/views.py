@@ -18,10 +18,12 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth import logout
 from .forms import ParentForm 
-from .models import SafetyCheck,SecondaryAddressRequest
+from .models import SafetyCheck,SecondaryAddressRequest,Parent
 from .forms import SafetyCheckForm,SecondaryAddressRequestForm
 from .models import Schedule, Tarif
 from .forms import ScheduleForm, TarifForm
+from django.shortcuts import redirect, get_object_or_404
+from django.urls import reverse
 
 
 class BusListView(LoginRequiredMixin, ListView):
@@ -165,6 +167,40 @@ class StudentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     success_url = reverse_lazy('student_list')
     permission_required = 'app.delete_student'
 
+
+def parent_add(request):
+    if request.method == "POST":
+        form = ParentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('parent_list')
+    else:
+        form = ParentForm()
+    return render(request, 'BusManagement_App/parent_form.html', {'form': form})
+
+
+def parent_edit(request, pk):
+    parent = get_object_or_404(Parent, pk=pk)
+    if request.method == "POST":
+        form = ParentForm(request.POST, instance=parent)
+        if form.is_valid():
+            form.save()
+            return redirect('parent_detail', pk=parent.pk)
+    else:
+        form = ParentForm(instance=parent)
+    return render(request, 'BusManagement_App/parent_form.html', {'form': form})
+
+
+def parent_detail(request, pk):
+    parent = get_object_or_404(Parent, pk=pk)
+    return render(request, 'BusManagement_App/parent_detail.html', {'parent': parent})
+
+def parent_delete(request, pk):
+    parent = get_object_or_404(Parent, pk=pk)
+    parent.delete()
+    return redirect('parent_list')
+
+
 class AdminListView(LoginRequiredMixin, ListView):
     model = Admin
     context_object_name = 'admins'
@@ -198,23 +234,28 @@ class AdminDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
 class BusViewSet(viewsets.ModelViewSet):
     queryset = Bus.objects.all()
     serializer_class = BusSerializer
+    permission_classes = [IsAuthenticated]
 
 class DriverViewSet(viewsets.ModelViewSet):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
+    permission_classes = [IsAuthenticated]
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    permission_classes = [IsAuthenticated]
 
 class AdminViewSet(viewsets.ModelViewSet):
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
+    permission_classes = [IsAuthenticated]
 
 
 
@@ -236,36 +277,11 @@ class SignupView(APIView):
 
         # Retourne la réponse avec le jeton d'authentification
         return Response({"token": token.key}, status=status.HTTP_201_CREATED)
-class BusViewSet(viewsets.ModelViewSet):
-    queryset = Bus.objects.all()
-    serializer_class = BusSerializer
-    permission_classes = [IsAuthenticated]
-
-class DriverViewSet(viewsets.ModelViewSet):
-    queryset = Driver.objects.all()
-    serializer_class = DriverSerializer
-    permission_classes = [IsAuthenticated]
-
-class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
-    serializer_class = RouteSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-    permission_classes = [IsAuthenticated]
-
-class AdminViewSet(viewsets.ModelViewSet):
-    queryset = Admin.objects.all()
-    serializer_class = AdminSerializer
-    permission_classes = [IsAuthenticated]    
 
 
 def user_logout(request):
     logout(request)
-    return redirect('login') 
+    return redirect('home') 
 
 @login_required
 def user_dashboard(request):

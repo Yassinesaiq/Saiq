@@ -1,13 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 class Bus(models.Model):
     number = models.CharField(max_length=5, unique=True)
     capacity = models.IntegerField()
     model = models.CharField(max_length=50)
 
-    def __str__(self):
-        return f"Bus {self.number} - Capacity: {self.capacity}"
+
 
 class Driver(models.Model):
     first_name = models.CharField(max_length=30)
@@ -54,9 +54,9 @@ class Student(models.Model):
     has_special_needs = models.BooleanField(default=False)
     temporary_disability = models.BooleanField(default=False)
     
-def check_eligibility(self):
-    DISTANCE_CRITERIA_GENERAL = 3  # Tous les élèves à 3km ou plus sont éligibles
-    DISTANCE_CRITERIA = {
+    def check_eligibility(self):
+     DISTANCE_CRITERIA_GENERAL = 3  # Tous les élèves à 3km ou plus sont éligibles
+     DISTANCE_CRITERIA = {
         'PS4': 0,  # Préscolaire 4 ans toujours éligible
         'PS5': 0.8,  # Préscolaire 5 ans à 0.8 km ou plus
         # Ajouter des critères pour les niveaux primaire et secondaire
@@ -66,20 +66,28 @@ def check_eligibility(self):
     }
     
     
-    if self.has_special_needs or self.temporary_disability:
+     if self.has_special_needs or self.temporary_disability:
         self.is_eligible_for_transport = True
-    elif self.distance_to_school >= DISTANCE_CRITERIA_GENERAL:
+     elif self.distance_to_school >= DISTANCE_CRITERIA_GENERAL:
         self.is_eligible_for_transport = True
-    elif self.grade in DISTANCE_CRITERIA and self.distance_to_school >= DISTANCE_CRITERIA[self.grade]:
+     elif self.grade in DISTANCE_CRITERIA and self.distance_to_school >= DISTANCE_CRITERIA[self.grade]:
         self.is_eligible_for_transport = True
-    else:
+     else:
         self.is_eligible_for_transport = False
     
-    self.save()
+     self.save()
+    def __str__(self):
+     return f"{self.first_name} {self.last_name} - Grade: {self.grade}  "
 
+class Parent(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    CNIE = models.CharField(max_length=30)
+    Enfants = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='Parents')
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} - Grade: {self.grade} - à Droit au Transport: {self.is_eligible_for_transport} "
+        return f"{self.first_name} {self.last_name} - Enfant :{self.Enfants} "    
 
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

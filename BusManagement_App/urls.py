@@ -3,6 +3,9 @@ from . import views
 from .views import user_logout,login_user
 from .views import SafetyCheckCreateView,SafetyCheckUpdateView,SafetyCheckDeleteView, SafetyCheckListView ,SecondaryAddressRequestListView,SecondaryAddressRequestCreateView,SecondaryAddressRequestDeleteView,SecondaryAddressRequestUpdateView
 from .views import TarifDeleteView,TarifUpdateView,TarifListView,TarifCreateView,ScheduleListView,ScheduleCreateView,ScheduleUpdateView,ScheduleDeleteView
+from .views import StudentListView, StudentCreateView, StudentDetailView, StudentUpdateView, StudentDeleteView
+from .views import parent_add, parent_edit, parent_detail, parent_delete
+
 urlpatterns = [
     # Your app's url patterns
     path('dashboard/', views.user_dashboard, name='user_dashboard'),
@@ -37,6 +40,19 @@ urlpatterns = [
     path('tarifs/', TarifListView.as_view(), name='list_tarifs'),
     path('tarifs/<int:pk>/update/', TarifUpdateView.as_view(), name='update_tarif'),
     path('tarifs/<int:pk>/delete/', TarifDeleteView.as_view(), name='delete_tarif'),
+
+    # URLs pour Students
+    path('students/', StudentListView.as_view(), name='student_list'),
+    path('students/add/', StudentCreateView.as_view(), name='student_add'),
+    path('students/<int:pk>/', StudentDetailView.as_view(), name='student_detail'),
+    path('students/<int:pk>/edit/', StudentUpdateView.as_view(), name='student_update'),
+    path('students/<int:pk>/delete/', StudentDeleteView.as_view(), name='student_delete'),
+    # ... your other URL patterns
+
+    path('parent/add/', parent_add, name='parent_add'),
+    path('parent/<int:pk>/edit/', parent_edit, name='parent_edit'),
+    path('parent/<int:pk>/', parent_detail, name='parent_detail'),
+    path('parent/<int:pk>/delete/', parent_delete, name='parent_delete'),
 
 
 

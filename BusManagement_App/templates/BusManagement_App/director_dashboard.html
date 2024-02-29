@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Tableau de Bord Directeur</title>
-</head>
-<body>
+{% extends "BusManagement_App/Base.html" %}
+{% block content %}
     <h1>Tableau de Bord Directeur</h1>
-
     <section>
         <h2>Parents</h2>
         <!-- Liste des parents -->
@@ -24,6 +18,4 @@
         <!-- Liste des chauffeurs -->
        <a href="{% url 'ajouter_chauffeur' %}"><button>Ajouter un Chauffeur</button></a>
     </section>
-
-</body>
-</html>
+    {% endblock %}

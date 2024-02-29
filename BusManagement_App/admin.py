@@ -1,5 +1,5 @@
 from django.contrib import admin
-from BusManagement_App.models import Bus, Driver, Route,Student, Admin,SecondaryAddressRequest,SafetyCheck,Schedule,Tarif
+from BusManagement_App.models import Bus, Driver, Route,Student,Parent, Admin,SecondaryAddressRequest,SafetyCheck,Schedule,Tarif
 
 class BusAdmin(admin.ModelAdmin):
     list_display = ('number', 'capacity', 'model')
@@ -26,23 +26,42 @@ class AdminAdmin(admin.ModelAdmin):
     list_display = ('user', 'job_title')
     search_fields = ('user__first_name', 'user__last_name', 'job_title')
 
-@admin.register(Tarif)
+class ParentAdmin(admin.ModelAdmin):
+    list_display = ('get_username', 'get_email', 'first_name', 'last_name', 'CNIE', 'get_student_name')
+    search_fields = ('user__username', 'user__email', 'first_name', 'last_name', 'CNIE', 'Enfants__first_name', 'Enfants__last_name')
+    list_filter = ('Enfants__grade',)
+
+    def get_username(self, obj):
+        return obj.user.username
+    get_username.admin_order_field = 'user__username'  # Permet le tri sur le nom d'utilisateur
+    get_username.short_description = 'Nom d’utilisateur'
+
+    def get_email(self, obj):
+        return obj.user.email
+    get_email.admin_order_field = 'user__email'  # Permet le tri sur l'email
+    get_email.short_description = 'Email'
+
+    def get_student_name(self, obj):
+        return f"{obj.Enfants.first_name} {obj.Enfants.last_name}"
+    get_student_name.short_description = 'Nom de l’Élève'
+
+
+
 class TarifAdmin(admin.ModelAdmin):
     list_display = ['route', 'montant']  # Affichez les champs que vous souhaitez voir dans l'interface d'administration
     search_fields = ['route__name']  # Permettez la recherche par nom de route
 
-@admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
     list_display = ['route', 'departure_time', 'arrival_time']
     list_filter = ['route']  # Filtrez par route dans l'interface d'administration
 
-@admin.register(SafetyCheck)
+
 class SafetyCheckAdmin(admin.ModelAdmin):
     list_display = ['bus', 'check_date', 'is_passed']
     list_filter = ['is_passed', 'check_date']
     search_fields = ['bus__number']
 
-@admin.register(SecondaryAddressRequest)
+
 class SecondaryAddressRequestAdmin(admin.ModelAdmin):
     list_display = ['student', 'address', 'is_approved']
     list_filter = ['is_approved']
@@ -56,3 +75,4 @@ admin.site.register(Driver, DriverAdmin)
 admin.site.register(Route, RouteAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Admin, AdminAdmin)
+admin.site.register(Parent, ParentAdmin)
