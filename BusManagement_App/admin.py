@@ -27,9 +27,8 @@ class AdminAdmin(admin.ModelAdmin):
     search_fields = ('user__first_name', 'user__last_name', 'job_title')
 
 class ParentAdmin(admin.ModelAdmin):
-    list_display = ('get_username', 'get_email', 'first_name', 'last_name', 'CNIE', 'get_student_name')
-    search_fields = ('user__username', 'user__email', 'first_name', 'last_name', 'CNIE', 'Enfants__first_name', 'Enfants__last_name')
-    list_filter = ('Enfants__grade',)
+    list_display = ('get_username', 'get_email', 'first_name', 'last_name', 'cnie',)
+    search_fields = ('user__username', 'user__email', 'first_name', 'last_name', 'cnie',)
 
     def get_username(self, obj):
         return obj.user.username
@@ -40,10 +39,6 @@ class ParentAdmin(admin.ModelAdmin):
         return obj.user.email
     get_email.admin_order_field = 'user__email'  # Permet le tri sur l'email
     get_email.short_description = 'Email'
-
-    def get_student_name(self, obj):
-        return f"{obj.Enfants.first_name} {obj.Enfants.last_name}"
-    get_student_name.short_description = 'Nom de l’Élève'
 
 
 

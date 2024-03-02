@@ -1,10 +1,15 @@
-from django.urls import path
+from django.urls import path,include
 from . import views
 from .views import user_logout,login_user
 from .views import SafetyCheckCreateView,SafetyCheckUpdateView,SafetyCheckDeleteView, SafetyCheckListView ,SecondaryAddressRequestListView,SecondaryAddressRequestCreateView,SecondaryAddressRequestDeleteView,SecondaryAddressRequestUpdateView
 from .views import TarifDeleteView,TarifUpdateView,TarifListView,TarifCreateView,ScheduleListView,ScheduleCreateView,ScheduleUpdateView,ScheduleDeleteView
 from .views import StudentListView, StudentCreateView, StudentDetailView, StudentUpdateView, StudentDeleteView
-from .views import parent_add, parent_edit, parent_detail, parent_delete
+from .views import parent_add, parent_edit, parent_detail, parent_delete,profil_parent,update_parent_email
+from rest_framework.routers import DefaultRouter
+from .views import StudentViewSet
+
+router = DefaultRouter()
+router.register(r'students', StudentViewSet, basename='student')
 
 urlpatterns = [
     # Your app's url patterns
@@ -42,6 +47,7 @@ urlpatterns = [
     path('tarifs/<int:pk>/delete/', TarifDeleteView.as_view(), name='delete_tarif'),
 
     # URLs pour Students
+    path('', include(router.urls)),
     path('students/', StudentListView.as_view(), name='student_list'),
     path('students/add/', StudentCreateView.as_view(), name='student_add'),
     path('students/<int:pk>/', StudentDetailView.as_view(), name='student_detail'),
@@ -53,10 +59,12 @@ urlpatterns = [
     path('parent/<int:pk>/edit/', parent_edit, name='parent_edit'),
     path('parent/<int:pk>/', parent_detail, name='parent_detail'),
     path('parent/<int:pk>/delete/', parent_delete, name='parent_delete'),
+    path('profil_parent/', profil_parent, name='profil_parent'),
+    path('parent/update_email/', update_parent_email, name='update_parent_email'),
 
 
 
-]
+]+ router.urls
 
     # ... other patterns for BusManagement_App
 

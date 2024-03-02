@@ -2,80 +2,72 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard de l'utilisateur</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .dashboard-header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-        }
-        .dashboard-menu {
-            background-color: #555;
-            padding: 15px;
-        }
-        .dashboard-menu ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .dashboard-menu ul li {
-            padding: 8px;
-            margin-bottom: 8px;
-            background-color: #777;
-            color: white;
-        }
-        .dashboard-content {
-            margin: 15px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Parent</title>
+    <!-- Intégration de Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="dashboard-header">
-        <h1>Bienvenue sur votre tableau de bord, {{ user.username }} !</h1>
-    </div>
-    <div class="dashboard-menu">
-        <ul>
-            <li>Profil</li>
-            <li>Messages</li>
-            <li>Activités</li>
-            <li>Paramètres</li>
-        </ul>
-    </div>
-    <div class="dashboard-content">
-        <h2>Votre Profil</h2>
-        <p>Nom d'utilisateur: {{ user.username }}</p>
-        <p>Email: {{ user.email }}</p>
-        <!-- Ajoutez d'autres informations de profil ici -->
-
-        <h2>Statistiques</h2>
-        <!-- Des exemples de statistiques que vous pourriez vouloir montrer -->
-        <p>Nombre de visites ce mois: ...</p>
-        <p>Nombre total de messages: ...</p>
-
-        <h2>Dernières Activités</h2>
-        <!-- Affichez les dernières activités de l'utilisateur ici -->
-
-        <h2>Messages Récents</h2>
-        <!-- Affichez les derniers messages ici -->
-
-        <div class="dashboard-content">
-            {% block content %}
-            <!-- Le contenu spécifique à chaque page sera inséré ici -->
-            {% endblock %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'parent_dashboard' %}">BusManagement</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profil_parent' %}">Profil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Notifications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Activités</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'update_parent_email' %}">Paramètres</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Se déconnecter</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-        
+    </nav>
 
+    <header class="bg-secondary text-white text-center py-3 mb-4">
+        <div class="container">
+            <h1 class="h2">Bienvenue sur votre tableau de bord, {{ user.username }} !</h1>
+        </div>
+    </header>
+
+    <div class="container my-3">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
+                        Profil
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">Messages</a>
+                    <a href="#" class="list-group-item list-group-item-action">Activités</a>
+                    <a href="{% url 'update_parent_email' %} " class="list-group-item list-group-item-action">Paramètres</a>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="dashboard-content">
+                    {% block content %}
+                  
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
     </div>
-    <a href="{% url 'logout' %}">Se déconnecter</a>
-    <!-- ... -->
+
+    <!-- Intégration de Bootstrap JS et Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

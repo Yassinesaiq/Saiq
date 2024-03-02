@@ -12,7 +12,7 @@ class ParentForm(forms.ModelForm):
 
     class Meta:
         model = Parent
-        fields = ['first_name', 'last_name', 'CNIE', 'Enfants', 'username', 'email', 'password']
+        fields = ['first_name', 'last_name','cnie', 'username', 'email', 'password']
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -48,7 +48,11 @@ class ParentForm(forms.ModelForm):
 
         return parent
 
-
+class ParentEmailForm(forms.ModelForm):
+    class Meta:
+        model = Parent
+        fields = ['email']
+        
 class BusForm(forms.ModelForm):
     class Meta:
         model = Bus

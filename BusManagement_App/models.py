@@ -26,6 +26,16 @@ class Route(models.Model):
 
     def __str__(self):
         return f"Route {self.name}: {self.start_point} to {self.end_point}"
+    
+class Parent(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    cnie = models.CharField(max_length=30,null=True)  # Utilisez des minuscules ici
+    email = models.EmailField(max_length=30,null=True)  # Utilisez des minuscules et le champ EmailField
+ 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} "
 
 
 class Student(models.Model):
@@ -47,6 +57,7 @@ class Student(models.Model):
     ]
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE, related_name='enfants',null=True)
     grade = models.CharField(max_length=10, choices=GRADE_CHOICES, default='PS4', help_text="Niveau scolaire de l'élève")
     address = models.CharField(max_length=255)
     distance_to_school = models.FloatField(help_text="Distance du domicile à l'école en kilomètres", default='0')
@@ -66,28 +77,16 @@ class Student(models.Model):
     }
     
     
-     if self.has_special_needs or self.temporary_disability:
-        self.is_eligible_for_transport = True
-     elif self.distance_to_school >= DISTANCE_CRITERIA_GENERAL:
-        self.is_eligible_for_transport = True
-     elif self.grade in DISTANCE_CRITERIA and self.distance_to_school >= DISTANCE_CRITERIA[self.grade]:
-        self.is_eligible_for_transport = True
-     else:
-        self.is_eligible_for_transport = False
+     if self.has_special_needs or self.temporary_disability:self.is_eligible_for_transport = True
+     elif self.distance_to_school >= DISTANCE_CRITERIA_GENERAL:self.is_eligible_for_transport = True
+     elif self.grade in DISTANCE_CRITERIA and self.distance_to_school >= DISTANCE_CRITERIA[self.grade]: self.is_eligible_for_transport = True
+     else: self.is_eligible_for_transport = False
     
      self.save()
     def __str__(self):
      return f"{self.first_name} {self.last_name} - Grade: {self.grade}  "
-
-class Parent(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    CNIE = models.CharField(max_length=30)
-    Enfants = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='Parents')
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name} - Enfant :{self.Enfants} "    
+    
+    
 
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

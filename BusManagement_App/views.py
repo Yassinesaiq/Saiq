@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .models import Bus, Driver, Route, Student, Admin
+from .models import Bus, Driver, Route, Student, Admin,Parent
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from rest_framework import viewsets
 from .serializers import BusSerializer, DriverSerializer, RouteSerializer, StudentSerializer, AdminSerializer
@@ -18,12 +18,15 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth import logout
 from .forms import ParentForm 
-from .models import SafetyCheck,SecondaryAddressRequest,Parent
+from .models import SafetyCheck,SecondaryAddressRequest
 from .forms import SafetyCheckForm,SecondaryAddressRequestForm
 from .models import Schedule, Tarif
-from .forms import ScheduleForm, TarifForm
+from .forms import ScheduleForm, TarifForm,ParentEmailForm
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
+from rest_framework.renderers import TemplateHTMLRenderer
+from django.template.response import TemplateResponse
+
 
 
 class BusListView(LoginRequiredMixin, ListView):
@@ -114,11 +117,13 @@ class RouteDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('route_list')
     permission_required = 'app.delete_route'
 
+class StudentListView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
 
-class StudentListView(LoginRequiredMixin, ListView):
-    model = Student
-    context_object_name = 'students'
-    template_name = 'student/student_list.html'
+    def get(self, request, *args, **kwargs):
+        queryset = Student.objects.all()
+        return TemplateResponse(request, 'student/student_list.html', {'students': queryset})
+
 
 class StudentDetailView(LoginRequiredMixin, DetailView):
     model = Student
@@ -247,10 +252,23 @@ class RouteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+from rest_framework.response import Response
+
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def list(self, request, *args, **kwargs):
+        response = super(StudentViewSet, self).list(request, *args, **kwargs)
+        # Si vous recevez une demande HTML, renvoyez les données avec le template.
+        if request.accepted_renderer.format == 'html':
+            return Response({
+                'students': response.data
+            }, template_name='BusManagement_App/student_list.html')
+        # Sinon, renvoyez la réponse API habituelle.
+        return response
 
 class AdminViewSet(viewsets.ModelViewSet):
     queryset = Admin.objects.all()
@@ -505,3 +523,22 @@ class SecondaryAddressRequestDeleteView(DeleteView):
     model = SecondaryAddressRequest
     template_name = 'secondaryaddressrequest_confirm_delete.html'
     success_url = reverse_lazy('list_secondary_address_requests')  # Assurez-vous que ce nom d'URL est défini dans votre urls.py
+
+@login_required
+def profil_parent(request):
+    parent = request.user.parent
+    return render(request, 'BusManagement_App/profil_parent.html', {'parent': parent})
+
+@login_required
+def update_parent_email(request):
+    parent = Parent.objects.get(user=request.user)
+    if request.method == 'POST':
+        form = ParentEmailForm(request.POST, instance=parent)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Votre adresse e-mail a été mise à jour avec succès.")
+            return redirect('update_parent_email')
+    else:
+        form = ParentEmailForm(instance=parent)
+    
+    return render(request, 'BusManagement_App/parent_parametre.html', {'form': form})
