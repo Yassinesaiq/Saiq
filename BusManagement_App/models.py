@@ -127,3 +127,13 @@ class SafetyCheck(models.Model):
     def __str__(self):
         status = "passed" if self.is_passed else "failed"
         return f"Safety check for {self.bus.number} on {self.check_date}: {status}"
+
+class EtudiantItineraire(models.Model):
+    etudiant = models.ForeignKey(Student, on_delete=models.CASCADE)
+    itineraire = models.ForeignKey(Route, on_delete=models.CASCADE)
+    date_assignation = models.DateField()
+
+    class Meta:
+        unique_together = ('etudiant', 'itineraire')
+        # Cette contrainte assure que la combinaison d'un étudiant et d'un itinéraire est unique,
+        # évitant ainsi les duplications dans les assignations.
