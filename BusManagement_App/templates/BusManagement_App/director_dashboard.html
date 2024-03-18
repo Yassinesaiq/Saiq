@@ -5,6 +5,8 @@
         <h2>Parents</h2>
         <!-- Liste des parents -->
        <a href="{% url 'ajouter_parent' %}"><button>Ajouter un Parent</button></a>
+       <a href="{% url 'modifier_parent' parent_id=parent.id %}"><button>Modifié un Parent</button></a>
+       <a href="{% url 'supprimer_parent' %}"><button>Supprimé un Parent</button></a>
     </section>
 
     <section>

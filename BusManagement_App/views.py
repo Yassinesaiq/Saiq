@@ -376,6 +376,30 @@ def ajouter_parent(request):
     # Afficher le formulaire
     return render(request, 'BusManagement_App/ajouter_parent.html', {'form': form})
 
+@login_required
+def modifier_parent(request, parent_id):
+    parent = get_object_or_404(Parent, id=parent_id)
+    
+    if request.method == 'POST':
+        form = ParentForm(request.POST, instance=parent)
+        if form.is_valid():
+            form.save()
+            return redirect('parent_dashboard')
+    else:
+        form = ParentForm(instance=parent)
+    
+    return render(request, 'BusManagement_App/modifier_parent.html', {'form': form})
+
+@login_required
+def supprimer_parent(request, parent_id):
+    parent = get_object_or_404(Parent, id=parent_id)
+    
+    if request.method == 'POST':
+        parent.delete()
+        return redirect('parent_dashboard')
+    
+    return render(request, 'BusManagement_App/supprimer_parent.html', {'parent': parent})
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import BusForm  # Assurez-vous d'avoir un formulaire BusForm

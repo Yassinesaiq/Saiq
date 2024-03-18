@@ -5,6 +5,7 @@ from .views import SafetyCheckCreateView,SafetyCheckUpdateView,SafetyCheckDelete
 from .views import TarifDeleteView,TarifUpdateView,TarifListView,TarifCreateView,ScheduleListView,ScheduleCreateView,ScheduleUpdateView,ScheduleDeleteView
 from .views import StudentListView, StudentCreateView, StudentDetailView, StudentUpdateView, StudentDeleteView
 from .views import parent_add, parent_edit, parent_detail, parent_delete,profil_parent,update_parent_email
+from .views import modifier_parent, supprimer_parent
 from rest_framework.routers import DefaultRouter
 from .views import StudentViewSet
 
@@ -20,6 +21,8 @@ urlpatterns = [
     path('dashboard/director/', views.director_dashboard, name='director_dashboard'),
     path('dashboard/parent/', views.parent_dashboard, name='parent_dashboard'),
     path('ajouter_parent/', views.ajouter_parent, name='ajouter_parent'),
+    path('parent/modifier/<int:parent_id>/', modifier_parent, name='modifier_parent'),
+    path('parent/supprimer/<int:parent_id>/', supprimer_parent, name='supprimer_parent'),
     path('ajouter_bus/', views.ajouter_bus, name='ajouter_bus'),
     path('ajouter_chauffeur/', views.ajouter_chauffeur, name='ajouter_chauffeur'),
 
