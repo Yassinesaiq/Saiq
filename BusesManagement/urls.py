@@ -26,7 +26,13 @@ urlpatterns = [
     path('bus/<int:pk>/edit/', views.BusUpdateView.as_view(), name='bus_edit'),
     path('bus/<int:pk>/delete/', views.BusDeleteView.as_view(), name='bus_delete'),
 
+
+   
+    path('parent/modifier/<int:parent_id>/', views.modifier_parent, name='modifier_parent'),
+     path('parent/supprimer/<int:parent_id>/', views.supprimer_parent, name='supprimer_parent'),
+
     # URLs pour les Conducteurs
+
     path('drivers/', views.DriverListView.as_view(), name='driver_list'),
     path('driver/<int:pk>/', views.DriverDetailView.as_view(), name='driver_detail'),
     path('driver/add/', views.DriverCreateView.as_view(), name='driver_add'),

@@ -26,6 +26,9 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.template.response import TemplateResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import ChauffeurForm  
 
 
 
@@ -350,9 +353,10 @@ def director_dashboard(request):
 
     # Logique pour récupérer les informations nécessaires
     buses = Bus.objects.all()
+    parents = Parent.objects.all()  # Récupérer tous les parents
     # Plus de logique selon les besoins
 
-    return render(request, 'BusManagement_App/director_dashboard.html', {'buses': buses})
+    return render(request, 'BusManagement_App/director_dashboard.html', {'buses': buses},{'parents': parents})
  # Assurez-vous d'avoir un formulaire ParentForm
 
 from django.contrib.auth.models import User, Group
@@ -415,9 +419,7 @@ def ajouter_bus(request):
         form = BusForm()
     return render(request, 'BusManagement_App/ajouter_bus.html', {'form': form})
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .forms import ChauffeurForm  # Assurez-vous d'avoir un formulaire ChauffeurForm
+
 
 @login_required
 def ajouter_chauffeur(request):

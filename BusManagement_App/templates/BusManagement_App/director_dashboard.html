@@ -4,9 +4,21 @@
     <section>
         <h2>Parents</h2>
         <!-- Liste des parents -->
-       <a href="{% url 'ajouter_parent' %}"><button>Ajouter un Parent</button></a>
-       <a href="{% url 'modifier_parent' parent_id=parent.id %}"><button>Modifié un Parent</button></a>
-       <a href="{% url 'supprimer_parent' %}"><button>Supprimé un Parent</button></a>
+        <a href="{% url 'ajouter_parent' %}"><button>Ajouter un Parent</button></a>
+        
+        <table>
+            {% for parent in parents %}
+            <tr>
+                <td>{{ parent.first_name }} {{ parent.last_name }}</td>
+                <td>
+                    <a href="{% url 'modifier_parent' parent_id=parent.id %}"><button>Modifier</button></a>
+                </td>
+                <td>
+                    <a href="{% url 'supprimer_parent' parent_id=parent.id %}"><button>Supprimer</button></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     </section>
 
     <section>
