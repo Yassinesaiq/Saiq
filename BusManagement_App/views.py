@@ -356,7 +356,9 @@ def director_dashboard(request):
     parents = Parent.objects.all()  # Récupérer tous les parents
     # Plus de logique selon les besoins
 
-    return render(request, 'BusManagement_App/director_dashboard.html', {'buses': buses},{'parents': parents})
+    context = {'buses': buses, 'parents': parents}
+
+    return render(request, 'BusManagement_App/director_dashboard.html', context)
  # Assurez-vous d'avoir un formulaire ParentForm
 
 from django.contrib.auth.models import User, Group
@@ -373,7 +375,7 @@ def ajouter_parent(request):
             user = form.save()
 
             # Rediriger vers le tableau de bord des parents
-            return redirect('parent_dashboard')
+            return redirect('director_dashboard')
     else:
         form = ParentForm()
 
@@ -388,7 +390,7 @@ def modifier_parent(request, parent_id):
         form = ParentForm(request.POST, instance=parent)
         if form.is_valid():
             form.save()
-            return redirect('parent_dashboard')
+            return redirect('director_dashboard')
     else:
         form = ParentForm(instance=parent)
     
@@ -400,7 +402,7 @@ def supprimer_parent(request, parent_id):
     
     if request.method == 'POST':
         parent.delete()
-        return redirect('parent_dashboard')
+        return redirect('director_dashboard')
     
     return render(request, 'BusManagement_App/supprimer_parent.html', {'parent': parent})
 

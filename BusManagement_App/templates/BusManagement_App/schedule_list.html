@@ -1,11 +1,58 @@
 {% extends 'BusManagement_App/Base.html' %}
 
 {% block content %}
-  <h2>Liste</h2>
-  <a href="{% url 'add_schedule' %}">Ajouter un nouvel horaire</a> <!-- Changez l'URL en fonction du modèle -->
-  <ul>
-    {% for schedule in object_list %} <!-- Changez la variable en fonction du modèle -->
-      <li>{{ schedule }} - <a href="{% url 'update_schedule' schedule.pk %}">Modifier</a> - <a href="{% url 'delete_schedule' schedule.pk %}">Supprimer</a></li>
-    {% endfor %}
-  </ul>
+<div class="container mt-5">
+  <h2 class="mb-4">Liste des Horaires</h2>
+  <a href="{% url 'add_schedule' %}" class="btn btn-success mb-3">Ajouter un nouvel horaire</a>
+
+  <!-- Conteneur pour Bing Maps -->
+  <div id="myMap" style="height: 400px; margin-bottom: 20px;"></div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Horaires</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for schedule in object_list %}
+            <tr>
+              <td>{{ schedule.id }}</td>
+              <td>{{ schedule }}</td>
+              <td>
+                <a href="{% url 'update_schedule' schedule.pk %}" class="btn btn-primary btn-sm">Modifier</a>
+                <a href="{% url 'delete_schedule' schedule.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script type='text/javascript'>
+  function loadMapScenario() {
+    var map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
+      /* Remplacez par vos options de carte, par exemple : */
+      center: new Microsoft.Maps.Location(47.606209, -122.332071), // Coordonnées de Seattle
+      zoom: 10
+    });
+    // Ajoutez ici des marqueurs ou d'autres fonctionnalités de carte.
+  }
+  
+</script>
+Authentification {
+  subscription-key = 'cSpf9V1px0f4Kn6RlU88P0O34tIdYHXdXYovEvvCwQ'
+
+}
+<script type='text/javascript' 
+        src='https://atlas.microsoft.com/sdk/javascript/mapcontrol?api-version=1&subscription-key=cSpf9V1px0f4Kn6RlU88P0O34tIdYHXdXYovEvvCwQ'
+        >
+</script>
+<script type="text/javascript" src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js"></script>
 {% endblock %}

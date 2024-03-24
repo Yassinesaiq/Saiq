@@ -1,35 +1,67 @@
 {% extends "BusManagement_App/Base.html" %}
+{% load static %} <!-- Chargez les fichiers statiques si nécessaire -->
+
 {% block content %}
-    <h1>Tableau de Bord Directeur</h1>
-    <section>
-        <h2>Parents</h2>
-        <!-- Liste des parents -->
-        <a href="{% url 'ajouter_parent' %}"><button>Ajouter un Parent</button></a>
-        
-        <table>
-            {% for parent in parents %}
-            <tr>
-                <td>{{ parent.first_name }} {{ parent.last_name }}</td>
-                <td>
-                    <a href="{% url 'modifier_parent' parent_id=parent.id %}"><button>Modifier</button></a>
-                </td>
-                <td>
-                    <a href="{% url 'supprimer_parent' parent_id=parent.id %}"><button>Supprimer</button></a>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-    </section>
+<div class="container mt-5">
+    <h1 class="mb-4">Tableau de Bord Directeur</h1>
 
-    <section>
-        <h2>Bus</h2>
-        <!-- Liste des bus -->
-        <a href="{% url 'ajouter_bus' %}"><button>Ajouter un Bus</button></a>
-    </section>
+    <div class="row">
+        <!-- Section Parents -->
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Parents</h2>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'ajouter_parent' %}" class="btn btn-success mb-3">Ajouter un Parent</a>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for parent in parents %}
+                            <tr>
+                                <td>{{ parent.first_name }} {{ parent.last_name }}</td>
+                                <td>
+                                    <a href="{% url 'modifier_parent' parent_id=parent.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                    <a href="{% url 'supprimer_parent' parent_id=parent.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-    <section>
-        <h2>Chauffeurs</h2>
-        <!-- Liste des chauffeurs -->
-       <a href="{% url 'ajouter_chauffeur' %}"><button>Ajouter un Chauffeur</button></a>
-    </section>
-    {% endblock %}
+        <!-- Section Bus -->
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Bus</h2>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'ajouter_bus' %}" class="btn btn-success mb-3">Ajouter un Bus</a>
+                    <!-- Ici vous pouvez ajouter une liste ou un tableau des bus -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Chauffeurs -->
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Chauffeurs</h2>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'ajouter_chauffeur' %}" class="btn btn-success mb-3">Ajouter un Chauffeur</a>
+                    <!-- Ici vous pouvez ajouter une liste ou un tableau des chauffeurs -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
