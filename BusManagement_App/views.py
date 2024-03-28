@@ -570,3 +570,22 @@ def update_parent_email(request):
         form = ParentEmailForm(instance=parent)
     
     return render(request, 'BusManagement_App/parent_parametre.html', {'form': form})
+
+from django.http import JsonResponse
+import requests
+def get_azure_maps_token(request):
+    # Make a request to the Azure Maps API to get the token
+    azure_maps_api_url = 'https://samples.azuremaps.com/api/GetAzureMapsToken'
+    response = requests.get(azure_maps_api_url)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Parse the JSON response and extract the token
+        data = response.json()
+        token = data.get('token')
+
+        # Return the token as a JSON response
+        return JsonResponse({'token': token})
+    else:
+        # If the request fails, return an error response
+        return JsonResponse({'error': 'Failed to retrieve Azure Maps token'}, status=response.status_code)

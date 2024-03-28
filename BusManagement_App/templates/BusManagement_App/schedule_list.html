@@ -5,8 +5,8 @@
   <h2 class="mb-4">Liste des Horaires</h2>
   <a href="{% url 'add_schedule' %}" class="btn btn-success mb-3">Ajouter un nouvel horaire</a>
 
-  <!-- Conteneur pour Bing Maps -->
-  <div id="myMap" style="height: 400px; margin-bottom: 20px;"></div>
+  <!-- Container for HERE Maps -->
+  <div id="map" style="height: 400px; margin-bottom: 20px;"></div>
 
   <div class="card">
     <div class="card-body">
@@ -35,24 +35,53 @@
   </div>
 </div>
 
-<script type='text/javascript'>
-  function loadMapScenario() {
-    var map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
-      /* Remplacez par vos options de carte, par exemple : */
-      center: new Microsoft.Maps.Location(47.606209, -122.332071), // Coordonnées de Seattle
-      zoom: 10
-    });
-    // Ajoutez ici des marqueurs ou d'autres fonctionnalités de carte.
-  }
-  
-</script>
-Authentification {
-  subscription-key = 'cSpf9V1px0f4Kn6RlU88P0O34tIdYHXdXYovEvvCwQ'
+<script>
+  var H; // Define 'H' in the global scope
 
-}
-<script type='text/javascript' 
-        src='https://atlas.microsoft.com/sdk/javascript/mapcontrol?api-version=1&subscription-key=cSpf9V1px0f4Kn6RlU88P0O34tIdYHXdXYovEvvCwQ'
-        >
+  // Load the HERE Maps API script
+  function loadHereMapsScript() {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://js.api.here.com/v3/3.1/mapsjs.bundle.js';
+      script.async = true;
+      script.onload = () => {
+        H = window.H; // Assign 'H' after the script is loaded
+        resolve();
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  async function initMap() {
+    try {
+      // Wait for the HERE Maps API script to load
+      await loadHereMapsScript();
+
+      // Initialize HERE Map
+      const platform = new H.service.Platform({
+        'apikey': 'B7KodafHmHQFQna3MlbTC6Z4BxLx7CfKKsa5EbZLHbk' // Replace with your actual API key
+      });
+
+      // Obtain the default map types from the platform object:
+      const defaultLayers = platform.createDefaultLayers();
+
+      // Create a map instance:
+      const map = new H.Map(document.getElementById("map"), defaultLayers.vector.normal.map, {
+        center: { lat: -34.397, lng: 150.644 },
+        zoom: 8,
+      });
+
+      // Add a resize listener to make sure that the map occupies the whole container
+      window.addEventListener('resize', () => map.getViewPort().resize());
+
+    } catch (error) {
+      console.error('Error loading HERE Maps API:', error);
+    }
+  }
+
+  // Initialize the map after defining 'initMap'
+  window.onload = initMap;
 </script>
-<script type="text/javascript" src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js"></script>
+
 {% endblock %}
