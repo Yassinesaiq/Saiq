@@ -13,10 +13,14 @@ Tableau de Bord Administratif : Un tableau de bord intuitif pour les administrat
 
 Technologies Utilisées
 
-Backend: Python, Django
+Backend: Python, Django 
+
 Frontend: HTML, CSS, JavaScript
+
 Base de Données: PostgreSQL
+
 Cartographie: OpenStreetMap, Leaflet pour l'interaction cartographique
+
 Déploiement: Heroku
 
 Défis Rencontrés
