@@ -1,6 +1,7 @@
 
 from pathlib import Path
 import os
+import django_heroku
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -130,3 +131,5 @@ CSP_DEFAULT_SRC = ("'none'", )
 CSP_SCRIPT_SRC = ("'self'", "cdn.example.com", "atlas.microsoft.com")
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+django_heroku.settings(locals())

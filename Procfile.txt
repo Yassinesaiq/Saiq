@@ -1,1 +1,1 @@
-web: gunicorn BusesManagement.wsgi --log-file -
+web: gunicorn BusManagement_App.wsgi --log-file -
