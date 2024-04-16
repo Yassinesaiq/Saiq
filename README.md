@@ -1,6 +1,7 @@
 Système de Gestion de Bus Scolaire (BusBrain)
 
 Description
+
 Notre projet est un système de gestion de bus scolaire conçu pour optimiser le transport des élèves de manière sûre et efficace. Notre objectif est de créer une solution qui aide les écoles à planifier et à surveiller les itinéraires des bus, à assurer la sécurité des étudiants, et à communiquer efficacement avec les parents et les conducteurs de bus. Avec un accent mis sur la fiabilité et l'accessibilité, notre système promet de moderniser la manière dont les écoles organisent le transport scolaire.
 
 Fonctionnalités
