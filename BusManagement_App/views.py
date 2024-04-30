@@ -29,6 +29,9 @@ from django.template.response import TemplateResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import ChauffeurForm  
+from django.http import JsonResponse
+from django.conf import settings
+
 
 
 
@@ -119,6 +122,48 @@ class RouteDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     template_name = 'route/route_confirm_delete.html'
     success_url = reverse_lazy('route_list')
     permission_required = 'app.delete_route'
+
+def my_view(request):
+    # Votre logique de vue ici...
+    context = {
+        'azure_maps_key': settings.AZURE_MAPS_KEY,
+        # Autres contextes pour votre vue
+    }
+    return render(request, 'schedule_list.html', context)
+
+def get_routes_api(request):
+    # Votre liste de routes avec les adresses à convertir
+    routes = Route.objects.all()
+
+    # La liste qui contiendra les données de vos itinéraires avec les coordonnées
+    routes_data = []
+
+    for route in routes:
+        # Appel à l'API de géocodage pour le point de départ
+        start_geocode = requests.get(
+            f"https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key={settings.AZURE_MAPS_KEY}&query={route.start_point}"
+        ).json()
+        
+        # Appel à l'API de géocodage pour le point d'arrivée
+        end_geocode = requests.get(
+            f"https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key={settings.AZURE_MAPS_KEY}&query={route.end_point}"
+        ).json()
+
+        # Vérifiez que la réponse de l'API contient des résultats avant d'essayer d'accéder aux coordonnées
+        if start_geocode['results'] and end_geocode['results']:
+            start_coords = start_geocode['results'][0]['position']
+            end_coords = end_geocode['results'][0]['position']
+
+            # Ajoutez les données de l'itinéraire avec les coordonnées à votre liste
+            routes_data.append({
+                'id': route.id,
+                'name': route.name,
+                'start_point': start_coords,
+                'end_point': end_coords
+            })
+
+    return JsonResponse(routes_data, safe=False)  # Envoyez la liste des itinéraires avec les coordonnées
+
 
 class StudentListView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -589,3 +634,16 @@ def get_azure_maps_token(request):
     else:
         # If the request fails, return an error response
         return JsonResponse({'error': 'Failed to retrieve Azure Maps token'}, status=response.status_code)
+
+def save_route(request):
+    if request.method == 'POST':
+        # Parsez les données reçues et créez les objets Route et Schedule
+        data = request.JSON
+        start_point = data.get('start')
+        end_point = data.get('end')
+        # Créez les objets en base de données en utilisant les modèles
+        route = Route.objects.create(name="Nom de l'itinéraire", start_point=start_point, end_point=end_point)
+        # ... Créez l'objet Schedule avec 'route' comme clé étrangère
+        return JsonResponse({'status': 'success', 'message': 'Itinéraire ajouté avec succès!'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'}, status=405)

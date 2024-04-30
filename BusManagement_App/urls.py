@@ -66,6 +66,12 @@ urlpatterns = [
     path('parent/update_email/', update_parent_email, name='update_parent_email'),
 
 
+    path('api/routes/', views.get_routes_api, name='api_routes'),
+    path('schedule-list/', views.my_view, name='schedule-list'),
+    path('save-route/', views.save_route, name='save_route'),
+
+
+
 
 ]+ router.urls
 

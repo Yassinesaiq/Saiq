@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+#from django.contrib.gis.db import models as geomodels
 from django.conf import settings
 
 class Bus(models.Model):
@@ -23,12 +24,12 @@ class Driver(models.Model):
 
 class Route(models.Model):
     name = models.CharField(max_length=100)
-    start_point = models.CharField(max_length=100)
-    end_point = models.CharField(max_length=100)
+    #start_location = geomodels.PointField(help_text="Use map widget for point selection")
+    #end_location = geomodels.PointField(help_text="Use map widget for point selection")
     buses = models.ManyToManyField(Bus)  # A route can have many buses and a bus can have many routes
 
     def __str__(self):
-        return f"Route {self.name}: {self.start_point} to {self.end_point}"
+        return f"Route {self.name}: {self.start_location} to {self.end_location}"
     
 class Parent(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)

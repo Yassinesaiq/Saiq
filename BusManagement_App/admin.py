@@ -1,6 +1,7 @@
 from django.contrib import admin
 from BusManagement_App.models import Bus, Driver, Route,Student,Parent, Admin,SecondaryAddressRequest,SafetyCheck,Schedule,Tarif
 
+
 class BusAdmin(admin.ModelAdmin):
     list_display = ('number', 'capacity', 'model')
     search_fields = ('number', 'model')
@@ -71,3 +72,4 @@ admin.site.register(Route, RouteAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Admin, AdminAdmin)
 admin.site.register(Parent, ParentAdmin)
+admin.site.register(Schedule)

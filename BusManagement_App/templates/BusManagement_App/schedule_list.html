@@ -1,12 +1,28 @@
 {% extends 'BusManagement_App/Base.html' %}
 
 {% block content %}
+<style>
+  #myMap {
+    height: 400px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  @media (max-width: 768px) {
+    #myMap {
+      height: 300px;
+    }
+  }
+</style>
+
 <div class="container mt-5">
   <h2 class="mb-4">Liste des Horaires</h2>
   <a href="{% url 'add_schedule' %}" class="btn btn-success mb-3">Ajouter un nouvel horaire</a>
 
-  <!-- Container for HERE Maps -->
-  <div id="map" style="height: 400px; margin-bottom: 20px;"></div>
+  <!-- Container for Azure Maps -->
+  <div id="myMap" style="height: 400px; margin-bottom: 20px;"></div>
 
   <div class="card">
     <div class="card-body">
@@ -36,52 +52,79 @@
 </div>
 
 <script>
-  var H; // Define 'H' in the global scope
-
-  // Load the HERE Maps API script
-  function loadHereMapsScript() {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://js.api.here.com/v3/3.1/mapsjs.bundle.js';
-      script.async = true;
-      script.onload = () => {
-        H = window.H; // Assign 'H' after the script is loaded
-        resolve();
-      };
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  }
-
-  async function initMap() {
-    try {
-      // Wait for the HERE Maps API script to load
-      await loadHereMapsScript();
-
-      // Initialize HERE Map
-      const platform = new H.service.Platform({
-        'apikey': 'B7KodafHmHQFQna3MlbTC6Z4BxLx7CfKKsa5EbZLHbk' // Replace with your actual API key
-      });
-
-      // Obtain the default map types from the platform object:
-      const defaultLayers = platform.createDefaultLayers();
-
-      // Create a map instance:
-      const map = new H.Map(document.getElementById("map"), defaultLayers.vector.normal.map, {
-        center: { lat: -34.397, lng: 150.644 },
-        zoom: 8,
-      });
-
-      // Add a resize listener to make sure that the map occupies the whole container
-      window.addEventListener('resize', () => map.getViewPort().resize());
-
-    } catch (error) {
-      console.error('Error loading HERE Maps API:', error);
-    }
-  }
-
-  // Initialize the map after defining 'initMap'
-  window.onload = initMap;
+  // Utilisez cette variable pour stocker votre clé d'API de manière sécurisée
+  const azureMapsKey = "{{ azure_maps_key }}";
 </script>
 
+<script>
+  var map;
+
+  function GetMap() {
+      map = new atlas.Map('myMap', {
+        center: [-5.0033, 34.0345],
+        zoom: 10,
+        authOptions: {
+            authType: 'subscriptionKey',
+            subscriptionKey: 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA'
+        }
+      });
+  }
+</script>
+
+<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js" async defer></script>
+<script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
+<script>
+  window.onload = function() {
+    GetMap();
+  };
+</script>
+<script> 
+  let startPoint;
+  let endPoint;
+  
+  // Fonction pour gérer le clic sur la carte et définir les points de départ/arrivée
+  function onMapClick(e) {
+      if (!startPoint) {
+          startPoint = e.position;
+          console.log('Start point set to:', startPoint);
+          // Vous pouvez ici ajouter un marqueur sur la carte pour le point de départ
+      } else if (!endPoint) {
+          endPoint = e.position;
+          console.log('End point set to:', endPoint);
+          // Ajoutez un marqueur pour le point d'arrivée et éventuellement tracez la route
+      }
+  }
+  
+  // Ajoutez un écouteur d'événement pour les clics sur la carte
+  map.addEventListener('click', onMapClick);
+  
+  // Fonction pour envoyer l'itinéraire à votre backend Django
+  function saveRoute() {
+      const routeData = {
+          start: startPoint,
+          end: endPoint,
+          // Autres données du formulaire
+      };
+  
+      // Utilisez AJAX pour envoyer 'routeData' à votre backend
+      // Exemple avec Fetch API
+      fetch('/url_de_votre_vue_django_pour_sauvegarder_litineraire/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrftoken // Assurez-vous d'obtenir le token CSRF de Django
+          },
+          body: JSON.stringify(routeData)
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log('Success:', data);
+          // Traitez la réponse
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+      });
+  }
+   
+</script>  
 {% endblock %}
