@@ -31,6 +31,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import ChauffeurForm  
 from django.http import JsonResponse
 from django.conf import settings
+from .models import GeocodedAddress
 
 
 
@@ -634,16 +635,13 @@ def get_azure_maps_token(request):
     else:
         # If the request fails, return an error response
         return JsonResponse({'error': 'Failed to retrieve Azure Maps token'}, status=response.status_code)
+    
 
-def save_route(request):
-    if request.method == 'POST':
-        # Parsez les données reçues et créez les objets Route et Schedule
-        data = request.JSON
-        start_point = data.get('start')
-        end_point = data.get('end')
-        # Créez les objets en base de données en utilisant les modèles
-        route = Route.objects.create(name="Nom de l'itinéraire", start_point=start_point, end_point=end_point)
-        # ... Créez l'objet Schedule avec 'route' comme clé étrangère
-        return JsonResponse({'status': 'success', 'message': 'Itinéraire ajouté avec succès!'})
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'}, status=405)
+# BusManagement_App/views.py
+
+from django.http import HttpResponse
+from .utils import geocode_and_save_addresses
+
+def geocode_students(request):
+    geocode_and_save_addresses()
+    return HttpResponse("Les adresses des étudiants ont été géocodées et enregistrées avec succès.")

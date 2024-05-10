@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 #from django.contrib.gis.db import models as geomodels
 from django.conf import settings
 
+
+
+
+
 class Bus(models.Model):
     number = models.CharField(max_length=5, unique=True)
     capacity = models.IntegerField()
@@ -29,7 +33,7 @@ class Route(models.Model):
     buses = models.ManyToManyField(Bus)  # A route can have many buses and a bus can have many routes
 
     def __str__(self):
-        return f"Route {self.name}: {self.start_location} to {self.end_location}"
+        return f"Route {self.name}: "
     
 class Parent(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -90,6 +94,8 @@ class Student(models.Model):
     def __str__(self):
      return f"{self.first_name} {self.last_name} - Grade: {self.grade}  "
     
+
+    
     
 
 class Admin(models.Model):
@@ -141,3 +147,8 @@ class EtudiantItineraire(models.Model):
         unique_together = ('etudiant', 'itineraire')
         # Cette contrainte assure que la combinaison d'un étudiant et d'un itinéraire est unique,
         # évitant ainsi les duplications dans les assignations.
+
+class GeocodedAddress(models.Model):
+    original_address = models.CharField(max_length=255)
+    latitude = models.FloatField()
+    longitude = models.FloatField()

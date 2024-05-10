@@ -84,7 +84,19 @@ WSGI_APPLICATION = 'BusesManagement.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {'default': dj_database_url.config(default='sqlite:///db.sqlite3')}
+DATABASES = {  
+    'default': {  
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'busbrain',  
+        'USER': 'root',  
+        'PASSWORD': 'Yassine@1960&',  
+        'HOST': '127.0.0.1',  
+        'PORT': '3306',  
+        'OPTIONS': {  
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  
+        }  
+    }  
+}
 
 
 # Password validation
@@ -120,7 +132,10 @@ USE_TZ = True
 import os
 
 AZURE_MAPS_KEY = os.getenv('AZURE_MAPS_KEY')
-GDAL_LIBRARY_PATH = r'C:\gdal-3.8.5'
+GDAL_LIBRARY_PATH = 'C:\\OSGeo4W\\bin\\gdal308.dll'
+if not os.path.exists(GDAL_LIBRARY_PATH):
+ raise Exception('GDAL library not found. Please specify the correct path.')
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -137,3 +152,28 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 django_heroku.settings(locals())
+
+AZURE_MAPS_KEY = os.getenv('I1_KytP9o2H33JFvrEILeh9wVCmcp6tc5i0ECU_obg0')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'C:\\Users\\noe_i\\Desktop\\Saiq\\Logs\\file.log',
+        },
+    },
+    'loggers': {
+        'BuseManagement_App': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+
+GEOCODER_BACKEND = 'geopy.geocoders.Nominatim'
+GEOCODER_NOMINATIM_USER_AGENT = 'BusesManagement'  # Remplacez par votre nom d'application

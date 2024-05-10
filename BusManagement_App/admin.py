@@ -13,7 +13,8 @@ class DriverAdmin(admin.ModelAdmin):
 
 class RouteAdmin(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('name', 'start_point', 'end_point')}),
+        (None, {'fields': ('name', #'start_point', 'end_point'
+                           )}),
         ('Buses', {'fields': ('buses',), 'description': 'Select buses for this route'}),
     )
     filter_horizontal = ('buses',)
@@ -73,3 +74,9 @@ admin.site.register(Student, StudentAdmin)
 admin.site.register(Admin, AdminAdmin)
 admin.site.register(Parent, ParentAdmin)
 admin.site.register(Schedule)
+
+
+from django.contrib import admin
+from .models import GeocodedAddress
+
+admin.site.register(GeocodedAddress)

@@ -9,6 +9,9 @@ from .views import modifier_parent, supprimer_parent
 from rest_framework.routers import DefaultRouter
 from .views import StudentViewSet
 
+
+
+
 router = DefaultRouter()
 router.register(r'students', StudentViewSet, basename='student')
 
@@ -68,7 +71,9 @@ urlpatterns = [
 
     path('api/routes/', views.get_routes_api, name='api_routes'),
     path('schedule-list/', views.my_view, name='schedule-list'),
-    path('save-route/', views.save_route, name='save_route'),
+    
+    
+  
 
 
 
