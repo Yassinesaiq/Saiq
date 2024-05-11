@@ -125,13 +125,21 @@ class RouteDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('route_list')
     permission_required = 'app.delete_route'
 
+
+from django.shortcuts import render
+from .utils import get_geocoded_addresses_for_map
+import logging
+from django.http import HttpResponse
+
+
+logger = logging.getLogger(__name__)
 def my_view(request):
-    # Votre logique de vue ici...
-    context = {
-        'azure_maps_key': settings.AZURE_MAPS_KEY,
-        # Autres contextes pour votre vue
-    }
-    return render(request, 'schedule_list.html', context)
+    
+    geojson_data = get_geocoded_addresses_for_map()
+    logger.debug(f"geojson_data: {geojson_data}")
+    response = HttpResponse()
+    response.set_cookie('geocode_session', 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA', samesite='None', secure=True)
+    return render(request, 'schedule_list.html',{'geojson_data': geojson_data})
 
 def get_routes_api(request):
     # Votre liste de routes avec les adresses à convertir
@@ -648,3 +656,6 @@ from .utils import geocode_and_save_addresses
 def geocode_students(request):
     geocode_and_save_addresses()
     return HttpResponse("Les adresses des étudiants ont été géocodées et enregistrées avec succès.")
+
+
+

@@ -1,7 +1,3 @@
-from azure.maps.search import MapsSearchClient
-from azure.core.credentials import AzureKeyCredential
-from azure.maps.geolocation import MapsGeolocationClient
-from azure.identity import DefaultAzureCredential
 from django.db.models.signals import post_save
 from .models import Student,GeocodedAddress
 import requests
@@ -11,9 +7,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# Créez une instance de MapsSearchClient avec votre clé d'abonnement Azure Maps
-# credential = AzureKeyCredential("fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA")
-# search_client = MapsSearchClient(credential=credential)
 subscription_key= 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA'
 
 def geocode_address(address, subscription_key):
@@ -37,6 +30,7 @@ def geocode_address(address, subscription_key):
 def geocode_and_save_addresses(student):
     # Récupérer l'adresse de l'étudiant
     address = student.address
+    
 
     logger.debug(f"Geocoding address: {address}")
     # Géocodage de l'adresse
@@ -54,7 +48,9 @@ def geocode_and_save_addresses(student):
         GeocodedAddress.objects.create(
             original_address=address,
             latitude=latitude,
-            longitude=longitude
+            longitude=longitude,
+            student=student
+            
         )
     else:
         logger.warning(f"Failed to geocode the address: {address}")
@@ -69,3 +65,39 @@ def geocode_student_address(sender, instance, created, **kwargs):
         geocode_and_save_addresses(instance)
 
 post_save.connect(geocode_student_address, sender=Student)
+
+
+import json
+
+import logging
+
+# Define a logger
+logger = logging.getLogger(__name__)
+
+def get_geocoded_addresses_for_map():
+    # Retrieve geocoded addresses from the database
+    geocoded_addresses = GeocodedAddress.objects.all()
+
+    # Prepare data in GeoJSON format
+    features = []
+    for address in geocoded_addresses:
+        feature = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [address.longitude, address.latitude]  # Note: GeoJSON uses [longitude, latitude] order
+            },
+            "properties": {
+                "address": address.original_address,
+                "student_name": f"{address.student.first_name} {address.student.last_name}"
+            }
+        }
+        features.append(feature)
+    print(feature)
+    geojson_data = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+    print("**********************************")
+    logger.debug(f"Geojson data: {geojson_data}")
+    return json.dumps(geojson_data)

@@ -155,6 +155,7 @@ class GeocodedAddress(models.Model):
     original_address = models.CharField(max_length=255)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='geocoded_addresses',null=True)
     def __str__(self):
         return f"{self.original_address}  "
 
