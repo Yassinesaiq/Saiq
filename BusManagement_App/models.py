@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 #from django.contrib.gis.db import models as geomodels
 from django.conf import settings
+from django.db.models.signals import post_save
+
+
 
 
 
@@ -152,3 +155,8 @@ class GeocodedAddress(models.Model):
     original_address = models.CharField(max_length=255)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    def __str__(self):
+        return f"{self.original_address}  "
+
+
+

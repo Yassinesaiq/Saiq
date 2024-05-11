@@ -162,7 +162,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'C:\\Users\\noe_i\\Desktop\\Saiq\\Logs\\file.log',
+            'filename': 'C:\\Users\\noe_i\\Desktop\\Saiq\\Logs\\hassan.log',
         },
     },
     'loggers': {

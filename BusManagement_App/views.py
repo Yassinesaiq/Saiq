@@ -32,7 +32,8 @@ from .forms import ChauffeurForm
 from django.http import JsonResponse
 from django.conf import settings
 from .models import GeocodedAddress
-
+import logging
+logging.basicConfig(level=logging.INFO,format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 
@@ -374,6 +375,8 @@ def parent_dashboard(request):
     return render(request, 'BusManagement_App/parent_dashboard.html', context)
 
 def login_user(request):
+    logging.info("******************************************************")
+    print("************************************** ********************")
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
