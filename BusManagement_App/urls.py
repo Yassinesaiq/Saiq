@@ -71,7 +71,7 @@ urlpatterns = [
 
 
     path('api/routes/', views.get_routes_api, name='api_routes'),
-    path('map/', my_view, name='map'),
+    path('map/', views.my_view, name='map'),
 
     
   

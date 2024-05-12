@@ -17,35 +17,40 @@
                     subscriptionKey: 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA'
                 }
             });
-
-            // Initialize the data source
-            datasource = new atlas.source.DataSource();
-
-            // Add a layer for rendering point data.
-            var resultLayer = new atlas.layer.SymbolLayer(datasource, null, {
-                iconOptions: {
-                    image: 'pin-round-darkblue',
-                    anchor: 'center',
-                    allowOverlap: true
-                },
-                textOptions: {
-                    anchor: "top"
-                }
+        
+            // Wait for the map to be ready
+            map.events.add('ready', function() {
+                // Initialize the data source
+                datasource = new atlas.source.DataSource();
+        
+                // Add the data (geojson) to the datasource
+                var geojson = {{ geojson_data|safe }};
+                datasource.add(geojson);
+        
+                // Add the datasource to the map
+                map.sources.add(datasource);
+        
+                // Add a layer for rendering point data.
+                var resultLayer = new atlas.layer.SymbolLayer(datasource, null, {
+                    iconOptions: {
+                        image: 'pin-round-darkblue',
+                        anchor: 'center',
+                        allowOverlap: true
+                    },
+                    textOptions: {
+                        anchor: "top"
+                    }
+                });
+        
+                // Add the result layer to the map
+                map.layers.add(resultLayer);
             });
-
-            var geojson = JSON.parse('{{ geojson_data|escapejs }}');
-            var dataSource = new atlas.source.GeoJsonSource({
-                data: geojson
-            });
-            map.sources.add(dataSource);
-
-            var layer = new atlas.layer.SymbolLayer(dataSource);
-            map.layers.add(layer);
         }
-
+        
         window.onload = function() {
             GetMap();
         };
+        
     </script>
 {% endblock %}
 

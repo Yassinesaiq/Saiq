@@ -133,13 +133,23 @@ from django.http import HttpResponse
 
 
 logger = logging.getLogger(__name__)
+from django.http import HttpResponse
+
 def my_view(request):
-    logger.debug(f"****************123")
+    print("********************12645444")
     geojson_data = get_geocoded_addresses_for_map()
     logger.debug(f"geojson_data: {geojson_data}")
+    
     response = HttpResponse()
-    response.set_cookie('geocode_session', 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA', samesite='None', secure=True)
-    return render(request,'Map.html',{'geojson_data': geojson_data})
+    response.set_cookie(
+        'geocode_session',
+        'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA',
+        samesite='None',  # Set SameSite attribute
+        secure=True  # Set Secure attribute
+    )
+    
+    return render(request, 'BusManagement_App/Map.html', {'geojson_data': geojson_data})
+
 
 def get_routes_api(request):
     # Votre liste de routes avec les adresses à convertir

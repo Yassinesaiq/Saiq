@@ -100,4 +100,5 @@ def get_geocoded_addresses_for_map():
     }
     print("**********************************")
     logger.debug(f"Geojson data: {geojson_data}")
+    print(f"Geojson data: {geojson_data}")
     return json.dumps(geojson_data)
