@@ -3,6 +3,9 @@
 {% block extra_js %}
     <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js" async defer></script>
     <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://atlas.microsoft.com/sdk/javascript/search/2/atlas-search.min.js"></script>
+
 
     <script>
         var map;
@@ -17,19 +20,32 @@
                     subscriptionKey: 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA'
                 }
             });
-        
+
             // Wait for the map to be ready
             map.events.add('ready', function() {
                 // Initialize the data source
                 datasource = new atlas.source.DataSource();
-        
+
                 // Add the data (geojson) to the datasource
                 var geojson = {{ geojson_data|safe }};
                 datasource.add(geojson);
-        
+
+                // Add the static point for "Université Sidi Mohammed ben Abdellah"
+                var universityFeature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [-4.9800265037012945, 34.03450501818707]
+                    },
+                    "properties": {
+                        "name": "Université Sidi Mohammed ben Abdellah"
+                    }
+                };
+                datasource.add(universityFeature);
+
                 // Add the datasource to the map
                 map.sources.add(datasource);
-        
+
                 // Add a layer for rendering point data.
                 var resultLayer = new atlas.layer.SymbolLayer(datasource, null, {
                     iconOptions: {
@@ -38,19 +54,59 @@
                         allowOverlap: true
                     },
                     textOptions: {
-                        anchor: "top"
+                        textField: ['coalesce', ['get', 'student_name'], ['get', 'name']],
+                        offset: [0, -3],
+                        anchor: "top",
+                        color: 'black',
+                        size: 13
                     }
                 });
-        
+
                 // Add the result layer to the map
                 map.layers.add(resultLayer);
+
+                // Create a popup but don't show it yet
+                var popup = new atlas.Popup({
+                    pixelOffset: [0, -20],
+                    closeButton: false
+                });
+
+                // Add mouse events to show/hide the popup on hover
+                map.events.add('mouseover', resultLayer, function(e) {
+                    // Check if 'shapes' object exists and contains at least one element
+                    if (e.shapes && e.shapes.length > 0) {
+                        // Check if the object contains a 'geometry' property with 'coordinates'
+                        if (e.shapes[0].geometry && e.shapes[0].geometry.coordinates) {
+                            var properties = e.shapes[0].getProperties();
+                            popup.setOptions({
+                                content: properties.address, // Use the 'address' property for the popup content
+                                position: e.shapes[0].geometry.coordinates // Position the popup over the point
+                            });
+                            popup.open(map);
+                        }
+                    }
+                });
+
+                map.events.add('mouseout', resultLayer, function(e) {
+                    popup.close();
+                });
+
+                // Add search control to the map
+                var searchControl = new atlas.control.SearchControl({
+                    language: 'fr-FR', // Set language for search results
+                    placeholder: 'Rechercher une adresse...',
+                    showMarker: true, // Show marker for search result
+                    showPopup: true // Show popup for search result
+                });
+                map.controls.add(searchControl, {
+                    position: 'top-right' // Position the search control
+                });
             });
         }
-        
+
         window.onload = function() {
             GetMap();
         };
-        
     </script>
 {% endblock %}
 
