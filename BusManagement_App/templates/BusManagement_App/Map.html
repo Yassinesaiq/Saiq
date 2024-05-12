@@ -1,0 +1,70 @@
+{% extends 'BusManagement_App/Base.html' %}
+
+{% block extra_js %}
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js" async defer></script>
+    <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
+
+    <script>
+        var map;
+        var datasource;
+
+        function GetMap() {
+            map = new atlas.Map('myMap', {
+                center: [-5.0033, 34.0345],
+                zoom: 10,
+                authOptions: {
+                    authType: 'subscriptionKey',
+                    subscriptionKey: 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA'
+                }
+            });
+
+            // Initialize the data source
+            datasource = new atlas.source.DataSource();
+
+            // Add a layer for rendering point data.
+            var resultLayer = new atlas.layer.SymbolLayer(datasource, null, {
+                iconOptions: {
+                    image: 'pin-round-darkblue',
+                    anchor: 'center',
+                    allowOverlap: true
+                },
+                textOptions: {
+                    anchor: "top"
+                }
+            });
+
+            var geojson = JSON.parse('{{ geojson_data|escapejs }}');
+            var dataSource = new atlas.source.GeoJsonSource({
+                data: geojson
+            });
+            map.sources.add(dataSource);
+
+            var layer = new atlas.layer.SymbolLayer(dataSource);
+            map.layers.add(layer);
+        }
+
+        window.onload = function() {
+            GetMap();
+        };
+    </script>
+{% endblock %}
+
+{% block content %}
+    <style>
+      #myMap {
+        height: 400px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      }
+
+      @media (max-width: 768px) {
+        #myMap {
+          height: 300px;
+        }
+      }
+    </style>
+
+    <div id="myMap"></div>
+{% endblock %}

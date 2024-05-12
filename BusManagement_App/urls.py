@@ -8,6 +8,7 @@ from .views import parent_add, parent_edit, parent_detail, parent_delete,profil_
 from .views import modifier_parent, supprimer_parent
 from rest_framework.routers import DefaultRouter
 from .views import StudentViewSet
+from .views import my_view
 
 
 
@@ -42,7 +43,7 @@ urlpatterns = [
     path('secondary-address-requests/<int:pk>/delete/', SecondaryAddressRequestDeleteView.as_view(), name='delete_secondary_address_request'),
 
     path('schedules/add/', ScheduleCreateView.as_view(), name='add_schedule'),
-    path('schedules/', ScheduleListView.as_view(), name='list_schedules'),
+    path('list_schedules/', ScheduleListView.as_view(), name='list_schedules'),
     path('schedules/<int:pk>/update/', ScheduleUpdateView.as_view(), name='update_schedule'),
     path('schedules/<int:pk>/delete/', ScheduleDeleteView.as_view(), name='delete_schedule'),
     
@@ -70,8 +71,8 @@ urlpatterns = [
 
 
     path('api/routes/', views.get_routes_api, name='api_routes'),
-    path('schedule-list/', views.my_view, name='schedule-list'),
-    
+    path('map/', my_view, name='map'),
+
     
   
 
