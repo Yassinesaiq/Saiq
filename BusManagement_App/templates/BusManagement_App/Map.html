@@ -4,9 +4,7 @@
     <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js" async defer></script>
     <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://atlas.microsoft.com/sdk/javascript/search/2/atlas-search.min.js"></script>
-
-
+    
     <script>
         var map;
         var datasource;
@@ -20,16 +18,17 @@
                     subscriptionKey: 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA'
                 }
             });
-
+        
             // Wait for the map to be ready
             map.events.add('ready', function() {
                 // Initialize the data source
                 datasource = new atlas.source.DataSource();
-
+                map.sources.add(datasource); // Add the datasource to the map
+        
                 // Add the data (geojson) to the datasource
                 var geojson = {{ geojson_data|safe }};
                 datasource.add(geojson);
-
+        
                 // Add the static point for "Université Sidi Mohammed ben Abdellah"
                 var universityFeature = {
                     "type": "Feature",
@@ -42,10 +41,7 @@
                     }
                 };
                 datasource.add(universityFeature);
-
-                // Add the datasource to the map
-                map.sources.add(datasource);
-
+        
                 // Add a layer for rendering point data.
                 var resultLayer = new atlas.layer.SymbolLayer(datasource, null, {
                     iconOptions: {
@@ -53,7 +49,8 @@
                         anchor: 'center',
                         allowOverlap: true
                     },
-                    textOptions: {
+                    textOptions:
+                    {
                         textField: ['coalesce', ['get', 'student_name'], ['get', 'name']],
                         offset: [0, -3],
                         anchor: "top",
@@ -61,16 +58,16 @@
                         size: 13
                     }
                 });
-
+        
                 // Add the result layer to the map
                 map.layers.add(resultLayer);
-
+        
                 // Create a popup but don't show it yet
                 var popup = new atlas.Popup({
                     pixelOffset: [0, -20],
                     closeButton: false
                 });
-
+        
                 // Add mouse events to show/hide the popup on hover
                 map.events.add('mouseover', resultLayer, function(e) {
                     // Check if 'shapes' object exists and contains at least one element
@@ -86,27 +83,70 @@
                         }
                     }
                 });
-
+        
                 map.events.add('mouseout', resultLayer, function(e) {
                     popup.close();
                 });
-
-                // Add search control to the map
-                var searchControl = new atlas.control.SearchControl({
-                    language: 'fr-FR', // Set language for search results
-                    placeholder: 'Rechercher une adresse...',
-                    showMarker: true, // Show marker for search result
-                    showPopup: true // Show popup for search result
-                });
-                map.controls.add(searchControl, {
-                    position: 'top-right' // Position the search control
-                });
+        
+                // Fetch route information when the window loads
+                var subscriptionKey = 'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA';
+                var coordinates = '-4.9800265037012945,34.03450501818707:-5.01046,34.05921'; // Vos coordonnées
+                var departureTime = '2024-05-25T09:00:00'; // Votre heure de départ
+        
+                var routeURL = 'https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=' 
+                    + subscriptionKey 
+                    + '&query=' + coordinates 
+                    + '&departureTime=' + departureTime;
+        
+                fetch(routeURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        displayRouteOnMap(data); // Appeler la fonction pour afficher l'itinéraire sur la carte
+                    })
+                    .catch(error => console.error('Une erreur s\'est produite:', error));
             });
         }
+        
 
-        window.onload = function() {
-            GetMap();
-        };
+// Function to display the route on the map
+// Function to display the route on the map
+function displayRouteOnMap(routeData) {
+    // Extract route geometry from the response and add it to the map as a layer
+    var routeGeometry = routeData.routes[0].legs[0].points;
+
+    // Create an empty array to store route coordinates
+    var coordinates = [];
+
+    // Loop through the route geometry and extract coordinates
+    routeGeometry.forEach(point => {
+        coordinates.push([point.longitude, point.latitude]);
+    });
+    console.log(coordinates);
+
+    // Create a GeoJSON object for the route
+    var routeGeojson = {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+            "type": "LineString",
+            "coordinates": coordinates
+        }
+    };
+
+    // Add the route layer to the map
+    var routeSource = new atlas.source.DataSource();
+    routeSource.add(new atlas.data.Feature(new atlas.data.LineString(coordinates), { strokeColor: 'blue', strokeWidth: 4 }));
+    map.sources.add(routeSource);
+
+    var routeLayer = new atlas.layer.LineLayer(routeSource, null, { strokeColor: 'blue', strokeWidth: 4 });
+    map.layers.add(routeLayer);
+}
+
+
+window.onload = function() {
+    GetMap();
+};
     </script>
 {% endblock %}
 
