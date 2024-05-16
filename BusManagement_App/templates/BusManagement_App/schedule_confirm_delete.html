@@ -1,0 +1,10 @@
+{% extends 'BusManagement_App/Base.html' %}
+
+{% block content %}
+  <h2>Êtes-vous sûr de vouloir supprimer cet objet ?</h2>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Supprimer</button>
+    <a href="{% url 'list_schedules' %}">Annuler</a> <!-- Changez l'URL en fonction du modèle -->
+  </form>
+{% endblock %}

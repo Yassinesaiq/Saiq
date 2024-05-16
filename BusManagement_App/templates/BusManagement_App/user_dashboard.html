@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de l'utilisateur</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .dashboard-menu {
+            background-color: #555;
+            padding: 115px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        .dashboard-menu ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .dashboard-menu ul li {
+            padding: 8px;
+            margin-bottom: 8px;
+            background-color: #777;
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .dashboard-menu ul li:hover {
+            background-color: #666;
+        }
+        .dashboard-content {
+            margin: 0 15px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-content h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <h1>Bienvenue sur votre tableau de bord, {{ user.username }} !</h1>
+    </div>
+    <div class="dashboard-menu">
+        <ul>
+            <li>Profil</li>
+            <li>Messages</li>
+            <li>Activités</li>
+            <li>Paramètres</li>
+        </ul>
+    </div>
+    <div class="dashboard-content">
+        <h2>Votre Profil</h2>
+        <p>Nom d'utilisateur: {{ user.username }}</p>
+        <p>Email: {{ user.email }}</p>
+        <!-- Ajoutez d'autres informations de profil ici -->
+
+        <h2>Statistiques</h2>
+        <!-- Des exemples de statistiques que vous pourriez vouloir montrer -->
+        <p>Nombre de visites ce mois: ...</p>
+        <p>Nombre total de messages: ...</p>
+
+        <h2>Dernières Activités</h2>
+        <!-- Affichez les dernières activités de l'utilisateur ici -->
+
+        <h2>Messages Récents</h2>
+        <!-- Affichez les derniers messages ici -->
+
+        <div class="dashboard-content">
+            {% block content %}
+            <!-- Le contenu spécifique à chaque page sera inséré ici -->
+            {% endblock %}
+        </div>
+    </div>
+    <a href="{% url 'logout' %}">Se déconnecter</a>
+    <!-- ... -->
+</body>
+</html>
+

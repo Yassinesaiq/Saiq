@@ -1,0 +1,40 @@
+{% extends 'BusManagement_App/parent_dashboard.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Informations du Parent
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ parent.user.username }}</h5>
+                    <p class="card-text">Email : {{ parent.email }}</p> <!-- Assurez-vous que c'est parent.email et non parent.user.email -->
+                    <p class="card-text">CNIE : {{ parent.cnie }}</p>
+                    <!-- Autres informations -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    Enfants
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for student in parent.enfants.all %}
+                    <li class="list-group-item">
+                        <strong>Nom :</strong> {{ student.first_name }} {{ student.last_name }}<br>
+                        <strong>Niveau Scolaire :</strong> {{ student.get_grade_display }}<br>
+                        <strong>Adresse :</strong> {{ student.address }}<br>
+                        <strong>Distance de l'école :</strong> {{ student.distance_to_school }} km<br>
+                        <strong>Éligible au transport :</strong> {{ student.is_eligible_for_transport|yesno:"Oui,Non" }}<br>
+                        <strong>Besoins spéciaux :</strong> {{ student.has_special_needs|yesno:"Oui,Non" }}<br>
+                        <strong>Handicap temporaire :</strong> {{ student.temporary_disability|yesno:"Oui,Non" }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "BusManagement_App/Base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="dashboard-title mb-4">Tableau de Bord Directeur</h1>
+
+    <div class="row">
+        <!-- Section Parents -->
+        <div class="col-md-4 mb-3">
+            <div class="card dashboard-card">
+                <div class="card-header dashboard-header">
+                    <h2>Parents</h2>
+                </div>
+                <div class="card-body dashboard-body">
+                    <a href="{% url 'ajouter_parent' %}" class="btn btn-success dashboard-btn">Ajouter un Parent</a>
+                    <div class="table-responsive">
+                        <table class="table dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for parent in parents %}
+                                <tr>
+                                    <td>{{ parent.first_name }} {{ parent.last_name }}</td>
+                                    <td>
+                                        <a href="{% url 'modifier_parent' parent_id=parent.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                        <a href="{% url 'supprimer_parent' parent_id=parent.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Bus -->
+        <div class="col-md-4 mb-3">
+            <div class="card dashboard-card">
+                <div class="card-header dashboard-header">
+                    <h2>Bus</h2>
+                </div>
+                <div class="card-body dashboard-body">
+                    <a href="{% url 'ajouter_bus' %}" class="btn btn-success dashboard-btn">Ajouter un Bus</a>
+                    <!-- Add your bus list or table here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Chauffeurs -->
+        <div class="col-md-4 mb-3">
+            <div class="card dashboard-card">
+                <div class="card-header dashboard-header">
+                    <h2>Chauffeurs</h2>
+                </div>
+                <div class="card-body dashboard-body">
+                    <a href="{% url 'ajouter_chauffeur' %}" class="btn btn-success dashboard-btn">Ajouter un Chauffeur</a>
+                    <!-- Add your chauffeurs list or table here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+    background-image: url('{% static "BusManagement_App/anaback.jpg" %}');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover; /* This will make the image cover the entire viewport */
+}
+    .dashboard-title {
+        color: #0056b3;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .dashboard-card {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.745);
+        border-radius: 30px;
+    }
+
+    .dashboard-header {
+        background-color: #007BFF;
+        color: white;
+        font-size: 1.25rem;
+        padding: 15px;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        text-align: center;
+
+    }
+
+    .dashboard-body {
+        padding: 20px;
+    }
+
+    .dashboard-btn {
+        width: 100%;
+        margin-bottom: 10px;
+        border-radius: 30px;
+    }
+
+    .dashboard-table th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-responsive {
+        margin-top: 15px;
+    }
+
+    .dashboard-table td {
+        padding: 10px;
+        vertical-align: middle;
+    }
+
+    .dashboard-table a.btn {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+    background-image: url('{% static "BusManagement_App/AA.jpg" %}');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover; /* This will make the image cover the entire viewport */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+        .container {
+            background: rgba(255, 255, 255, 0.501);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 400px; /* Adjusted width */
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        h2 {
+            color: #007BFF; /* Adjusted text color */
+            margin-bottom: 20px; /* Spacing under the title */
+            text-align: center; /* Center align title */
+        }
+        .form-group label {
+            color: #4A4A4A;
+        }
+        form {
+            margin-top: 20px;
+        }
+        .form-control {
+            border-radius: 8px; /* Rounded borders for inputs */
+        }
+        button {
+            background-color: #007BFF; /* Bootstrap primary color */
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 20px;
+            width: 100%; /* Button width matches container */
+        }
+        button:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Bienvenue dans l'app BusBrain</h2>
+        <form action="{% url 'login_user' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur:</label>
+                <input type="text" class="form-control" name="username" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe:</label>
+                <input type="password" class="form-control" name="password" id="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Connexion</button>
+        </form>
+    </div>
+</body>
+</html>

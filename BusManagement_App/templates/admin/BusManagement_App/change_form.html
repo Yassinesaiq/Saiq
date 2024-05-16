@@ -1,0 +1,73 @@
+{% extends "admin/change_form.html" %}
+
+{% block content %}
+    {{ block.super }}
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://samples.azuremaps.com/lib/azure-maps/azure-maps-helper.min.js"></script>
+
+    <!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+    <link href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css" rel="stylesheet" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js"></script>
+
+    <script>
+
+        var geocodeServiceUrlTemplate = 'https://{azMapsDomain}/search/{searchType}/json?typeahead=true&api-version=1.0&query={query}&language={language}&lon={lon}&lat={lat}&view=Auto';      
+        var universityCoords = [-4.9800265037012945, 34.03450501818707];
+        var map;
+
+        function initStudent() {
+            map = new atlas.Map(document.createElement("div"), {
+                center: [-5.0033, 34.0345],
+                zoom: 10,
+                authOptions: {
+                    authType: 'subscriptionKey',
+                    subscriptionKey: 'tX8QollQ26xGAEAJ6w3YSI3mHjr65fNRkPAgrgn84Q4'
+                }
+            });
+
+           //Create a jQuery autocomplete UI widget.
+           $("#id_address").autocomplete({
+                          minLength: 3,   //Don't ask for suggestions until atleast 3 characters have been typed. This will reduce costs by not making requests that will likely not have much relevance.
+                          source: function (request, response) {
+      
+                              //Create a URL to the Azure Maps search service to perform the search.
+                              var requestUrl = geocodeServiceUrlTemplate.replace('{query}', encodeURIComponent(request.term))
+                                  // .replace('{searchType}', document.querySelector('input[name="searchTypeGroup"]:checked').value)
+                                  .replace('{searchType}', "address")
+                                  
+                                  .replace('{language}', 'en-US')
+                                  .replace('{lon}', universityCoords[0])    //Use a lat and lon value of the center the map to bais the results to the current map view.
+                                  .replace('{lat}', universityCoords[1])
+      
+                                processRequest(requestUrl).then(data => {
+                                  response(data.results);
+                              });
+                          },
+                          select: function (event, ui) {
+                            $("#id_address").val(ui.item.address.freeformAddress || '');
+                            return false;
+                          }
+                      }).autocomplete("instance")._renderItem = function (ul, item) {
+                          //Format the displayed suggestion to show the formatted suggestion string.
+                          var suggestionLabel = item.address.freeformAddress;
+      
+                          if (item.poi && item.poi.name) {
+                              suggestionLabel = item.poi.name + ' (' + suggestionLabel + ')';
+                          }
+      
+                          return $("<li>")
+                              .append("<a>" + suggestionLabel + "</a>")
+                              .appendTo(ul);
+                      };
+        }
+      
+        $(document).ready(function() {
+            initStudent();
+        });
+
+      </script>
+{% endblock %}

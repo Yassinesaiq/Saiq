@@ -1,0 +1,38 @@
+{% extends 'BusManagement_App/Base.html' %}
+
+{% block content %}
+
+    <div class="container mt-5">
+      <h2 class="mb-4">Liste des Horaires</h2>
+      <a href="{% url 'add_schedule' %}" class="btn btn-success mb-3">Ajouter un nouvel horaire</a>
+
+      <!-- Container for Azure Maps -->
+      <div id="myMap" style="height: 400px; margin-bottom: 20px;"></div>
+
+      <div class="card">
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Horaires</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for schedule in object_list %}
+                <tr>
+                  <td>{{ schedule.id }}</td>
+                  <td>{{ schedule }}</td>
+                  <td>
+                    <a href="{% url 'update_schedule' schedule.pk %}" class="btn btn-primary btn-sm">Modifier</a>
+                    <a href="{% url 'delete_schedule' schedule.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+{% endblock %}

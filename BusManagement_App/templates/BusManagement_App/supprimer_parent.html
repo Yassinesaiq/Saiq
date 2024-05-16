@@ -1,0 +1,12 @@
+{% extends "BusManagement_App/base.html" %}
+
+{% block content %}
+<h2>Supprimer le parent</h2>
+<p>Êtes-vous sûr de vouloir supprimer ce parent ? Cette action est irréversible.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirmer la suppression</button>
+    <a href="{% url 'parent_dashboard' %}">Annuler</a>
+</form>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "BusManagement_App/Base.html" %} {# Assurez-vous que ce fichier étend un template de base existant dans votre projet. #}
+
+{% block extra_js %}
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js" async defer></script>
+<script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
+<script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
+
+{% endblock %}
+
+{% block content %}
+  <h2>Ajouter un élève</h2>
+  <button>Test</button>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }} {# Affiche les champs du formulaire. Vous pouvez personnaliser l'affichage des champs si nécessaire. #}
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+  </form>
+{% endblock %}
+

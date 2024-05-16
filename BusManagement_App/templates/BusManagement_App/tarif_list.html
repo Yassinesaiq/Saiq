@@ -1,0 +1,27 @@
+{% extends 'BusManagement_App/Base.html' %}
+
+{% block content %}
+  <h2>Liste des Tarifs</h2>
+  <a href="{% url 'add_tarif' %}">Ajouter un nouveau tarif</a>
+  <table>
+    <thead>
+      <tr>
+        <th>Route</th>
+        <th>Montant</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tarif in object_list %}
+        <tr>
+          <td>{{ tarif.route }}</td>
+          <td>{{ tarif.montant }}</td>
+          <td>
+            <a href="{% url 'update_tarif' tarif.pk %}">Modifier</a> |
+            <a href="{% url 'delete_tarif' tarif.pk %}">Supprimer</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
