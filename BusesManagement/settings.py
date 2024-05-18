@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'tX8QollQ26xGAEAJ6w3YSI3mHjr65fNRkPAgrgn84Q4'
+SECRET_KEY = 'Bf60F453Df25467C3F2Fd35071Fa1Faaa7840Faa56A97D53'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -87,9 +87,9 @@ WSGI_APPLICATION = 'BusesManagement.wsgi.application'
 DATABASES = {  
     'default': {  
         'ENGINE': 'django.db.backends.mysql',  
-        'NAME': 'busbraindb',  
+        'NAME': 'busbrain',  
         'USER': 'root',  
-        'PASSWORD': 'root',  
+        'PASSWORD': 'Yassine@1960&',  
         'HOST': '127.0.0.1',  
         'PORT': '3306',  
         'OPTIONS': {  
@@ -132,9 +132,9 @@ USE_TZ = True
 import os
 
 AZURE_MAPS_KEY = os.getenv('AZURE_MAPS_KEY')
-#GDAL_LIBRARY_PATH = 'C:\\OSGeo4W\\bin\\gdal308.dll'
-#if not os.path.exists(GDAL_LIBRARY_PATH):
-# raise Exception('GDAL library not found. Please specify the correct path.')
+GDAL_LIBRARY_PATH = 'C:\\OSGeo4W\\bin\\gdal308.dll'
+if not os.path.exists(GDAL_LIBRARY_PATH):
+ raise Exception('GDAL library not found. Please specify the correct path.')
 
 
 # Static files (CSS, JavaScript, Images)
@@ -162,7 +162,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'C:\\Users\\Huawei\\log.log',
+            'filename': 'C:\\Users\\noe_i\\Desktop\\Saiq\\Logs\\hassan.log',
         },
     },
     'loggers': {
