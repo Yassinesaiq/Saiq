@@ -82,4 +82,4 @@ class SafetyCheckForm(forms.ModelForm):
 class SecondaryAddressRequestForm(forms.ModelForm):
     class Meta:
         model = SecondaryAddressRequest
-        fields = ['student', 'address', 'is_approved']
+        fields = ['student', 'address', 'is_approved', "duration", "longitude", "latitude"]

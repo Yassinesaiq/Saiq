@@ -129,15 +129,16 @@ class SecondaryAddressRequest(models.Model):
     address = models.CharField(max_length=255)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    duration = models.IntegerField(null=True)  # Duration in days
     is_approved = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True)
 
     def __str__(self):
         return f"Request by {self.student.first_name} for address {self.address}"
 
     def save(self, *args, **kwargs):
-        if not self.latitude or not self.longitude:
-            self.latitude, self.longitude = self.geocode_address()
+        if self.latitude is None or self.longitude is None:
+            self.latitude, self.longitude = self.geocode_address() # Todo
         super().save(*args, **kwargs)
         
 class SafetyCheck(models.Model):
@@ -166,6 +167,3 @@ class GeocodedAddress(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='geocoded_addresses',null=True)
     def __str__(self):
         return f"{self.original_address}  "
-
-
-

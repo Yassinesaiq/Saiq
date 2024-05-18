@@ -74,6 +74,7 @@ admin.site.register(Student, StudentAdmin)
 admin.site.register(Admin, AdminAdmin)
 admin.site.register(Parent, ParentAdmin)
 admin.site.register(Schedule)
+admin.site.register(SecondaryAddressRequest, SecondaryAddressRequestAdmin)
 
 
 from django.contrib import admin

@@ -85,6 +85,7 @@
             <a href="{% url 'list_tarifs' %}">Tarifs</a>
             <a href="{% url 'student_list' %}">Etudiants</a>
             <a href="{% url 'map' %}">Map</a>
+            
         </div>
         {% if user.is_authenticated %}
             <button class="logout-button" onclick="location.href='{% url 'logout' %}'">

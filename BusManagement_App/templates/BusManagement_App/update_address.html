@@ -1,0 +1,239 @@
+{% extends "BusManagement_App/parent_dashboard.html" %}
+
+{% block content %}
+
+<style>
+    #myMap {
+        height: 400px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    @media (max-width: 768px) {
+        #myMap {
+            height: 300px;
+        }
+    }
+</style>
+
+<h2>Update Address</h2>
+<label for="search-address">Search address</label>
+<input id="search-address" style="width: 80%;"></input>
+<div id="myMap"></div>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Update Address</button>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+<script src="https://samples.azuremaps.com/lib/azure-maps/azure-maps-helper.min.js"></script>
+<link href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css" rel="stylesheet" />
+<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js"></script>
+
+<script>
+    const apiKey = 'tX8QollQ26xGAEAJ6w3YSI3mHjr65fNRkPAgrgn84Q4';
+    const apiUrl = `https://atlas.microsoft.com/search/address/json?api-version=1.0&query={address}&subscription-key=${apiKey}&maxFuzzyLevel=1&language={language}`;
+    var geocodeServiceUrlTemplate = `https:///atlas.microsoft.com/search/{searchType}/json?typeahead=true&api-version=1.0&query={query}&language={language}&lon={lon}&lat={lat}&view=Auto&subscription-key=${apiKey}`;      
+    var universityCoords = [-4.9800265037012945, 34.03450501818707];
+    var map;
+    var datasource;
+
+    function hideCoords() {
+        let lonEl = document.getElementById("id_longitude");
+        let latEl = document.getElementById("id_latitude");
+
+        lonEl.parentNode.style.display = "none";
+        latEl.parentNode.style.display = "none";
+
+    }
+
+    async function checkIfAddressExists(address) {
+        let isReal = false;
+
+        try {
+            let requestUrl = apiUrl
+                .replace("{address}", encodeURIComponent(address))
+                .replace('{language}', 'fr-FR');
+            const response = await fetch(requestUrl);
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log(data);
+
+            if (data && data.results && data.results.length > 0) {
+                const highQualityMatches = data.results.filter(result => result.score >= 0.9);
+                if (highQualityMatches.length > 0) {
+                    isReal = true;
+                    console.log(`90% that the following address is real ${address}`)
+                }
+            }
+        } catch (error) {
+            console.error('There has been a problem with your fetch operation:', error);
+        }
+
+        return isReal;
+    }
+
+    function initMap() {
+        datasource = new atlas.source.DataSource();
+        map.sources.add(datasource);
+
+        //Add a layer for rendering the route lines and have it render under the map labels.
+        map.layers.add(new atlas.layer.LineLayer(datasource, null, {
+                    strokeColor: '#2272B9',
+                    strokeWidth: 5,
+                    lineJoin: 'round',
+                    lineCap: 'round'
+                }), 'labels');
+
+        //Add a layer for rendering point data.
+        map.layers.add(new atlas.layer.SymbolLayer(datasource, null, {
+            iconOptions: {
+                image: ['get', 'icon'],
+                allowOverlap: true
+        },
+            textOptions: {
+                textField: ['get', 'title'],
+                offset: [0, 1.2]
+            },
+            filter: ['any', ['==', ['geometry-type'], 'Point'], ['==', ['geometry-type'], 'MultiPoint']] //Only render Point or MultiPoints in this layer.
+        }));
+
+        map.events.add("click", (event) => {
+            let coords = event.position;
+
+            map.markers.clear();
+
+            var marker = new atlas.HtmlMarker({
+                    color: 'Red',
+                    text: '',
+                    position: coords,
+                });
+            
+            map.markers.add(marker);
+
+            //Create a URL to the Azure Maps search service to perform the search.
+            var requestUrl = geocodeServiceUrlTemplate.replace('{query}', `${coords[1]}, ${coords[0]}`)
+                // .replace('{searchType}', document.querySelector('input[name="searchTypeGroup"]:checked').value)
+                .replace('{searchType}', "address/reverse")
+                
+                .replace('{language}', 'fr-FR')
+                .replace('{lon}', coords[0])    //Use a lat and lon value of the center the map to bais the results to the current map view.
+                .replace('{lat}', coords[1])
+
+            fetch(`${requestUrl}&number=1`)
+            .then(response  => response .json())
+            .then(data => {
+                if (data && data.addresses && data.addresses.length > 0) {
+                    console.log(data.addresses[0].address.freeformAddress);
+                    $("#search-address").val(data.addresses[0].address.freeformAddress || '');
+                    $("#id_address").val(data.addresses[0].address.freeformAddress || '');
+                    $("#id_longitude").val(coords[0]);
+                    $("#id_latitude").val(coords[1]);
+                }
+            });
+        });
+
+    }
+
+
+    function initAddressInput() {
+        map = new atlas.Map("myMap", {
+            center: [-5.0033, 34.0345],
+            zoom: 10,
+            authOptions: {
+                authType: 'subscriptionKey',
+                subscriptionKey: 'tX8QollQ26xGAEAJ6w3YSI3mHjr65fNRkPAgrgn84Q4'
+            }
+        });
+
+        map.events.add('ready', initMap);
+
+         //Create a jQuery autocomplete UI widget.
+         $("#search-address").autocomplete({
+            minLength: 3,   //Don't ask for suggestions until atleast 3 characters have been typed. This will reduce costs by not making requests that will likely not have much relevance.
+            source: function (request, response) {
+
+                //Create a URL to the Azure Maps search service to perform the search.
+                var requestUrl = geocodeServiceUrlTemplate.replace('{query}', encodeURIComponent(request.term))
+                    // .replace('{searchType}', document.querySelector('input[name="searchTypeGroup"]:checked').value)
+                    .replace('{searchType}', "address")
+                    
+                    .replace('{language}', 'fr-FR')
+                    .replace('{lon}', universityCoords[0])    //Use a lat and lon value of the center the map to bais the results to the current map view.
+                    .replace('{lat}', universityCoords[1])
+
+                processRequest(requestUrl).then(data => {
+                    response(data.results);
+                });
+            },
+            select: function (event, ui) {
+                $("#search-address").val(ui.item.address.freeformAddress || '');
+                $("#id_address").val(ui.item.address.freeformAddress || '');
+
+                $("#id_longitude").val(ui.item.position.lon);
+                $("#id_latitude").val(ui.item.position.lat);
+
+                let coords = [ui.item.position.lon, ui.item.position.lat];
+
+                //Create an HTML marker and add it to the map.
+                map.markers.clear();
+
+                var marker = new atlas.HtmlMarker({
+                    color: 'Red',
+                    text: '',
+                    position: coords,
+                });
+
+                map.markers.add(marker);
+
+                //Add a click event to toggle the popup.
+                // map.events.add('click',marker, () => {
+                //     map.markers.remove(marker);
+                // });
+
+                map.setCamera({
+                    center: coords,
+                    zoom: 15, // Adjust zoom level as needed
+                    minZoom: 10
+                }, true);
+
+                return false;
+            }
+        }).autocomplete("instance")._renderItem = function (ul, item) {
+            //Format the displayed suggestion to show the formatted suggestion string.
+            var suggestionLabel = item.address.freeformAddress;
+
+            if (item.poi && item.poi.name) {
+                suggestionLabel = item.poi.name + ' (' + suggestionLabel + ')';
+            }
+
+            return $("<li>")
+                .append("<a>" + suggestionLabel + "</a>")
+                .appendTo(ul);
+        };
+    }
+
+
+    checkIfAddressExists('15127 NE 24th Street, Redmond, WA 98052').then(result => {console.log(result)});
+    checkIfAddressExists('1I DON"T EXIST2');
+    checkIfAddressExists("4 Rue 4 JNANE MEKOUAR SIDI BOUJIDA FES MAROC");
+
+    $(document).ready(function() {
+        initAddressInput();
+        hideCoords()
+    });
+
+    hideCoords()
+</script>
+{% endblock %}

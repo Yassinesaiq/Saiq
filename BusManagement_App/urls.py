@@ -76,6 +76,9 @@ urlpatterns = [
 
     path('api/routes/', views.get_routes_api, name='api_routes'),
     path('map/', views.my_view, name='map'),
+    path('update_address/', views.update_address, name='update_address'),
+
+ 
 
     
   

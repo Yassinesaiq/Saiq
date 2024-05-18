@@ -89,7 +89,8 @@ def get_geocoded_addresses_for_map():
             },
             "properties": {
                 "address": address.original_address,
-                "student_name": f"{address.student.first_name} {address.student.last_name}"
+                "student_name": f"{address.student.first_name} {address.student.last_name}",
+                "student_id": address.student.id
             }
         }
         features.append(feature)
@@ -118,8 +119,9 @@ def get_second_addresses_for_map():
                 "coordinates": [address.longitude, address.latitude]  # Note: GeoJSON uses [longitude, latitude] order
             },
             "properties": {
-                "address": address.original_address,
-                "student_name": f"{address.student.first_name} {address.student.last_name}"
+                "address": address.address,
+                "student_name": f"{address.student.first_name} {address.student.last_name}",
+                "student_id": address.student.id
             }
         }
         features.append(feature)

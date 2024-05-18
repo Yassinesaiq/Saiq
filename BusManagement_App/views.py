@@ -161,8 +161,22 @@ from django.http import HttpResponse
 logger = logging.getLogger(__name__)
 from django.http import HttpResponse
 
+
+def secondaryAddressCleanup():
+    records = SecondaryAddressRequest.objects.all()
+    for _record in records:
+
+        if timezone.now() > _record.created_at + datetime.timedelta(days=_record.duration):
+            _record.delete()
+
+
 def my_view(request):
     print("********************12645444")
+
+    secondaryAddressCleanup()
+    # 1. View the table all records of secondary adresses
+    # 2. Remove expired rows
+
     geojson_data = get_geocoded_addresses_for_map()
     second_addresses = get_second_addresses_for_map()
 
@@ -692,5 +706,33 @@ def geocode_students(request):
     geocode_and_save_addresses()
     return HttpResponse("Les adresses des étudiants ont été géocodées et enregistrées avec succès.")
 
+import datetime
+from datetime import timedelta
+from django.utils import timezone
+
+def update_address(request):
+    secondary_address_request = get_object_or_404(SecondaryAddressRequest)
+    
+    if request.method == 'POST':
+        form = SecondaryAddressRequestForm(request.POST, instance=secondary_address_request)
+        if form.is_valid():
+            form.save()
+            
+            # Update the expiration date based on the duration provided by the user
+            update_expiration_date(secondary_address_request)
+
+            return redirect('parent_dashboard')  # Redirect to parent dashboard or any other desired URL
+    else:
+        form = SecondaryAddressRequestForm(instance=secondary_address_request)
+    
+    return render(request, 'BusManagement_App/update_address.html', {'form': form})
 
 
+def update_expiration_date(secondary_address_request):
+    # Calculate the expiration date based on the current date and the duration in days
+    current_date = timezone.now()
+    expiration_date = current_date + timedelta(days=secondary_address_request.duration)
+    
+    # Store the expiration date in the model
+    secondary_address_request.expiration_date = expiration_date
+    secondary_address_request.save()

@@ -87,9 +87,9 @@ WSGI_APPLICATION = 'BusesManagement.wsgi.application'
 DATABASES = {  
     'default': {  
         'ENGINE': 'django.db.backends.mysql',  
-        'NAME': 'busbrain',  
+        'NAME': 'busbraindb',  
         'USER': 'root',  
-        'PASSWORD': 'Yassine@1960&',  
+        'PASSWORD': 'root',  
         'HOST': '127.0.0.1',  
         'PORT': '3306',  
         'OPTIONS': {  
@@ -162,7 +162,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'C:\\Users\\noe_i\\Desktop\\Saiq\\log.log',
+            'filename': 'C:\\Users\\Huawei\\log.log',
         },
     },
     'loggers': {
