@@ -84,18 +84,18 @@ WSGI_APPLICATION = 'BusesManagement.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {  
-    'default': {  
-        'ENGINE': 'django.db.backends.mysql',  
-        'NAME': 'busbraindb',  
-        'USER': 'root',  
-        'PASSWORD': 'root',  
-        'HOST': '127.0.0.1',  
-        'PORT': '3306',  
-        'OPTIONS': {  
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  
-        }  
-    }  
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'busbraindb',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
+    }
 }
 
 
@@ -147,13 +147,15 @@ CSP_DEFAULT_SRC = ("'none'", )
 CSP_SCRIPT_SRC = ("'self'", "cdn.example.com", "atlas.microsoft.com")
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 django_heroku.settings(locals())
 
 AZURE_MAPS_KEY = os.getenv('I1_KytP9o2H33JFvrEILeh9wVCmcp6tc5i0ECU_obg0')
 import pathlib
 print(pathlib.Path().resolve().joinpath("Logs\\hassan.log"))
- 
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
