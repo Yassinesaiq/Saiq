@@ -5,8 +5,151 @@
     <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js" async defer></script>
     <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
     <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
+    <script src="/lib/azure-maps/azure-maps-animations.min.js"></script>
 
     <script>
+        // Animation logic
+        var animations = {};
+
+        //Create an array of points to define a path to animate along.
+        var animatedRoutePaths = [];
+
+        function createAnimation(busDriverId, pathNum, animationTime) {
+            let path;
+
+            if (animatedRoutePaths.length < pathNum) {
+                setTimeout(() => {
+                    createAnimation(busDriverId, pathNum, animationTime)
+                }, 200);
+            }
+
+            path = animatedRoutePaths[pathNum];
+
+            //Load a custom image icon into the map resources.
+            map.imageSprite.createFromTemplate('arrow-icon', 'marker-arrow', 'teal', '#fff').then(function () {
+
+            //Create data sources and add them to the map.
+            let lineSource = new atlas.source.DataSource();
+            let pinSource = new atlas.source.DataSource();
+            map.sources.add([lineSource, pinSource]);
+
+            //Create a layer to render the path.
+            map.layers.add(new atlas.layer.LineLayer(lineSource, null, {
+                strokeColor: 'DodgerBlue',
+                strokeWidth: 3
+            }));
+
+            //Create a line for the path and add it to the data source.
+            lineSource.add(new atlas.data.LineString(path));
+
+            //Create a layer to render a symbol which we will animate.
+            map.layers.add(new atlas.layer.SymbolLayer(pinSource, null, {
+                iconOptions: {
+                    //Pass in the id of the custom icon that was loaded into the map resources.
+                    image: 'arrow-icon',
+
+                    //Anchor the icon to the center of the image.
+                    anchor: 'center',
+
+                    //Rotate the icon based on the rotation property on the point data.
+                    //The arrow icon being used in this case points down, so we have to rotate it 180 degrees.
+                    rotation: ['+', 180, ['get', 'heading']],
+
+                    //Have the rotation align with the map.
+                    rotationAlignment: 'map',
+
+                    //For smoother animation, ignore the placement of the icon. This skips the label collision calculations and allows the icon to overlap map labels. 
+                    ignorePlacement: true,
+
+                    //For smoother animation, allow symbol to overlap all other symbols on the map.
+                    allowOverlap: true
+                },
+                textOptions: {
+                    //For smoother animation, ignore the placement of the text. This skips the label collision calculations and allows the text to overlap map labels.
+                    ignorePlacement: true,
+
+                    //For smoother animation, allow text to overlap all other symbols on the map.
+                    allowOverlap: true
+                }
+            }));
+
+            //Create a pin and wrap with the shape class and add to data source.
+            let pin = new atlas.Shape(new atlas.data.Feature(new atlas.data.Point(path[0])));
+            pinSource.add(pin);
+
+            console.log(path)
+            //Create the animation.
+            let animation = atlas.animations.moveAlongPath(path, pin, { 
+                //Capture metadata so that data driven styling can be done.
+                captureMetadata: true,
+                
+                duration: animationTime, 
+                loop: document.getElementById('loopAnimation').checked,
+                reverse: document.getElementById('reverseAnimation').checked,
+                rotationOffset: (document.getElementById('reverseAnimation').checked)? 90: 0,
+
+                //If following enabled, add a map to the animation.
+                map: (document.getElementById('followSymbol').checked)? map: null,
+
+                //Camera options to use when following.
+                zoom: 15,
+                pitch: 45,
+                rotate: true
+            });
+
+            animations[busDriverId] = {
+                path: path,
+                pin: pin,
+                lineSource: lineSource,
+                pinSource: pinSource,
+                animationTime: animationTime,
+                animation: animation
+            };
+        });
+        }
+
+        function toggleFollow(){
+            for (const [driverId, routeData] of Object.entries(animations)) {
+                let animation = routeData["animation"];
+
+                animation.setOptions({
+                    map: (animation.getOptions().map)? null : map
+                });
+            }
+        }
+
+        function toggleFollowOffset(){
+            for (const [driverId, routeData] of Object.entries(animations)) {
+                let animation = routeData["animation"];
+
+                animation.setOptions({
+                    rotationOffset: (animation.getOptions().rotationOffset === 0)? 90 : 0
+                });
+            }
+        }
+
+        function toggleLooping(){
+            for (const [driverId, routeData] of Object.entries(animations)) {
+                let animation = routeData["animation"];
+
+                animation.setOptions({
+                    loop: !animation.getOptions().loop
+                });
+            }
+        }
+
+        function toggleReverse(){
+            for (const [driverId, routeData] of Object.entries(animations)) {
+                let animation = routeData["animation"];
+
+                animation.setOptions({
+                    reverse: !animation.getOptions().reverse
+                });
+            }
+        }
+
+
+        // Map logic
         var map;
         var datasource;
         var geojson;
@@ -147,6 +290,7 @@
                 let driver_index = 0;
                 busDrivers.forEach((busDriver) => {
                     createBusRoute(busDriver["driver_id"], busDriver["students"], driverPathColors[driver_index]);
+                    createAnimation(busDriver["driver_id"], driver_index, 25_000);
                     driver_index++;
                 });
             });
@@ -265,6 +409,8 @@
                     //Add each turn to the array
                     routeCoordinates = routeCoordinates.concat(legCoordinates);
                 });
+
+                animatedRoutePaths.push(routeCoordinates);
 
                 //Add route line to the datasource
                 datasource.add({
@@ -390,4 +536,15 @@
     </style>
 
     <div id="myMap"></div>
+    <div style="position:absolute;bottom:15px;right:15px;border-radius:5px;padding:5px;background-color:white;">
+        <input type="button" value="Play" onclick="animation.play()" title="Play" />
+        <input type="button" value="Pause" onclick="animation.pause()" title="Pause" />
+        <input type="button" value="Stop" onclick="animation.stop()" title="Stop" />
+        <input type="button" value="Reset" onclick="animation.reset()" title="Reset" />
+        <br /><br />
+        Follow: <input id="followSymbol" type="checkbox" onclick="toggleFollow()" title="Follow" /><br />
+        Follow offset: <input id="followOffset" type="checkbox" onclick="toggleFollowOffset()" title="Follow offset" /><br />
+        Loop: <input id="loopAnimation" type="checkbox" onclick="toggleLooping()" title="Loop" /><br />
+        Reverse: <input id="reverseAnimation" type="checkbox" onclick="toggleReverse()" title="Reverse" />
+    </div>
 {% endblock %}
