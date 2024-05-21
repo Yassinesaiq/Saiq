@@ -190,6 +190,49 @@ def my_view(request):
         secure=True  # Set Secure attribute
     )
     return render(request, 'BusManagement_App/Map.html', {'geojson_data': geojson_data, "second_addresses": second_addresses})
+
+
+def my_view_Parent(request):
+    print("********************12645444")
+
+    secondaryAddressCleanup()
+    # 1. View the table all records of secondary adresses
+    # 2. Remove expired rows
+
+    geojson_data = get_geocoded_addresses_for_map()
+    second_addresses = get_second_addresses_for_map()
+
+    logger.debug(f"geojson_data: {geojson_data}")
+    
+    response = HttpResponse()
+    response.set_cookie(
+        'geocode_session',
+        'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA',
+        samesite='None',  # Set SameSite attribute
+        secure=True  # Set Secure attribute
+    )
+    return render(request, 'BusManagement_App/Map_Parent.html', {'geojson_data': geojson_data, "second_addresses": second_addresses})
+
+
+def my_view_Driver(request):
+
+    secondaryAddressCleanup()
+    # 1. View the table all records of secondary adresses
+    # 2. Remove expired rows
+
+    geojson_data = get_geocoded_addresses_for_map()
+    second_addresses = get_second_addresses_for_map()
+
+    logger.debug(f"geojson_data: {geojson_data}")
+    
+    response = HttpResponse()
+    response.set_cookie(
+        'geocode_session',
+        'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA',
+        samesite='None',  # Set SameSite attribute
+        secure=True  # Set Secure attribute
+    )
+    return render(request, 'BusManagement_App/Map_driver.html', {'geojson_data': geojson_data, "second_addresses": second_addresses})
     
 
 def get_routes_api(request):
@@ -266,6 +309,7 @@ class StudentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
     def get_success_url(self):
         # URL de redirection après une création réussie
         return reverse_lazy('student_list')  # Remplacez 'student_list' par le nom de votre URL de liste d'élèves
+    
 
 
 class StudentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -445,6 +489,9 @@ def login_user(request):
             elif user.groups.filter(name='Parents').exists():
                 login(request, user)
                 return redirect('parent_dashboard')
+            elif user.groups.filter(name='Conducteurs').exists():
+                login(request, user)
+                return redirect('driver_dashboard')
             else:
                 return HttpResponse("Vous n'avez pas les droits nécessaires.")
         else:
@@ -465,6 +512,24 @@ def director_dashboard(request):
     context = {'buses': buses, 'parents': parents}
 
     return render(request, 'BusManagement_App/director_dashboard.html', context)
+
+
+@login_required
+def driver_dashboard(request):
+    # Assurez-vous que l'utilisateur est un directeur
+    if not request.user.groups.filter(name='Conducteurs').exists():
+        return HttpResponse("Accès refusé.")
+
+    # Logique pour récupérer les informations nécessaires
+    buses = Bus.objects.all()
+    parents = Parent.objects.all()  # Récupérer tous les parents
+    # Plus de logique selon les besoins
+
+    context = {'buses': buses, 'parents': parents}
+
+    return render(request, 'BusManagement_App/driver_dashboard.html', context)
+
+
  # Assurez-vous d'avoir un formulaire ParentForm
 
 from django.contrib.auth.models import User, Group

@@ -28,6 +28,7 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path('dashboard/director/', views.director_dashboard, name='director_dashboard'),
     path('dashboard/parent/', views.parent_dashboard, name='parent_dashboard'),
+    path('dashboard/driver/', views.driver_dashboard, name='driver_dashboard'),
     path('ajouter_parent/', views.ajouter_parent, name='ajouter_parent'),
     path('parent/modifier/<int:parent_id>/', modifier_parent, name='modifier_parent'),
     path('parent/supprimer/<int:parent_id>/', supprimer_parent, name='supprimer_parent'),
@@ -76,6 +77,8 @@ urlpatterns = [
 
     path('api/routes/', views.get_routes_api, name='api_routes'),
     path('map/', views.my_view, name='map'),
+    path('map_parent/', views.my_view_Parent, name='map_parent'),
+    path('map_driver/', views.my_view_Driver, name='map_driver'),
     path('update_address/', views.update_address, name='update_address'),
 
  

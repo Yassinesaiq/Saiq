@@ -33,7 +33,7 @@
                         <a class="nav-link" href="{% url 'update_parent_email' %}">Paramètres</a>
                     </li>
                      <li class="nav-item">
-                        <a href="{% url 'update_address' %}">Maj Address</a>
+                        <a class="nav-link" href="{% url 'update_address' %}">Maj Address</a>
                     </li> 
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Se déconnecter</a>
@@ -60,7 +60,7 @@
                     <a href="#" class="list-group-item list-group-item-action">Messages</a>
                     <a href="#" class="list-group-item list-group-item-action">Activités</a>
                     <a href="{% url 'update_parent_email' %} " class="list-group-item list-group-item-action">Paramètres</a>
-                    <a class="list-group-item list-group-item-action" href="{% url 'map' %}">Map</a>
+                    <a href="{% url 'map_parent' %}" class="list-group-item list-group-item-action">Map</a>
                 </div>
             </div>
             <div class="col-md-9">

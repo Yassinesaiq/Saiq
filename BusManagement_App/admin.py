@@ -7,9 +7,13 @@ class BusAdmin(admin.ModelAdmin):
     search_fields = ('number', 'model')
 
 class DriverAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'license_number', 'bus')
+    list_display = ('get_username','first_name', 'last_name', 'license_number', 'bus')
     list_filter = ('bus',)
-    search_fields = ('first_name', 'last_name', 'license_number')
+    search_fields = ('user__username','first_name', 'last_name', 'license_number')
+
+    def get_username(self, obj):
+     return obj.user.username if obj.user else 'No user'
+
 
 class RouteAdmin(admin.ModelAdmin):
     fieldsets = (

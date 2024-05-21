@@ -87,9 +87,9 @@ WSGI_APPLICATION = 'BusesManagement.wsgi.application'
 DATABASES = {  
     'default': {  
         'ENGINE': 'django.db.backends.mysql',  
-        'NAME': 'busbraindb',  
+        'NAME': 'busbrain',  
         'USER': 'root',  
-        'PASSWORD': 'root',  
+        'PASSWORD': 'Yassine@1960&',  
         'HOST': '127.0.0.1',  
         'PORT': '3306',  
         'OPTIONS': {  
@@ -132,6 +132,9 @@ USE_TZ = True
 import os
 
 AZURE_MAPS_KEY = os.getenv('AZURE_MAPS_KEY')
+GDAL_LIBRARY_PATH = 'C:\\OSGeo4W\\bin\\gdal308.dll'
+if not os.path.exists(GDAL_LIBRARY_PATH):
+ raise Exception('GDAL library not found. Please specify the correct path.')
 
 
 # Static files (CSS, JavaScript, Images)
@@ -151,9 +154,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 django_heroku.settings(locals())
 
 AZURE_MAPS_KEY = os.getenv('I1_KytP9o2H33JFvrEILeh9wVCmcp6tc5i0ECU_obg0')
-import pathlib
-print(pathlib.Path().resolve().joinpath("Logs\\hassan.log"))
- 
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -161,7 +162,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': pathlib.Path().resolve().joinpath("Logs\\hassan.log"),
+            'filename': 'C:\\Users\\noe_i\\Desktop\\Saiq\\hassan.log',
         },
     },
     'loggers': {
