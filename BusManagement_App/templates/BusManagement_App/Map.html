@@ -20,15 +20,7 @@
   // Animation logic
   var animations = {};
 
-  //Create an array of points to define a path to animate along.
-  var animatedRoutePaths = [];
-
-  async function createAnimation(busDriverId, pathNum, animationTime) {
-    console.log(pathNum)
-    let path;
-
-    path = animatedRoutePaths[pathNum];
-
+  async function createAnimation(busDriverId, path, animationTime) {
     //Load a custom image icon into the map resources.
     map.imageSprite.createFromTemplate('arrow-icon', 'marker-arrow', 'teal', '#fff').then(function () {
 
@@ -69,7 +61,7 @@
       }));
 
       //Create a pin and wrap with the shape class and add to data source.
-      let pin = new atlas.Shape(new atlas.data.Feature(new atlas.data.Point(path[0])));
+      let pin = new atlas.Shape(new atlas.data.Feature(new atlas.data.Point(path)));
       pinSource.add(pin);
 
       //Create the animation.
@@ -91,14 +83,20 @@
         rotate: true
       });
 
-      animations[busDriverId] = {
-        path: path,
-        pin: pin,
-        lineSource: lineSource,
-        pinSource: pinSource,
-        animationTime: animationTime,
-        animation: animation
-      };
+      if (animations[busDriverId] == undefined) {
+          animations[busDriverId] = {
+            path: path,
+            pin: pin,
+            lineSource: lineSource,
+            pinSource: pinSource,
+            animationTime: animationTime,
+            animation: animation
+          };
+      } else {
+        // Extend the path array with new route path
+        animations[busDriverId]["path"] = animations[busDriverId]["path"].concat(path);
+      }
+
     });
   }
 
@@ -309,13 +307,15 @@
       let busDrivers = assignStudentsToDrivers(locations, 2);
 
       for (let i = 0; i < busDrivers.length; i++) {
-        await createBusRoute(busDrivers[i]["driver_id"], busDrivers[i]["students"], driverPathColors[i]);
-        await createAnimation(busDrivers[i]["driver_id"], i, 25_000);
+        let driverPath = await createBusRoute(busDrivers[i]["driver_id"], busDrivers[i]["students"], driverPathColors[i]);
+        createAnimation(busDrivers[i]["driver_id"], driverPath, 25_000);
       }
     });
   }
 
   async function createBusRoute(driverId, students, lineColor) {
+    let result = [];
+
     exec_count = 1;
     if (students.length > 1) {
       let routeCombination = [
@@ -335,17 +335,28 @@
           continue;
         }
 
-        await buildPath(pointA["coords"], pointB["coords"], `${pointA["point_label"]}`, `${pointB["point_label"]}`, lineColor);
+        await buildPath(pointA["coords"], pointB["coords"], `${pointA["point_label"]}`, `${pointB["point_label"]}`, lineColor)
+            .then((path) => {
+              result = result.concat(path);
+            });
 
         pointA = pointB;
         pointB = busRoute[i + 1];
         exec_count++;
       }
     } else {
-      await buildPath(universityCoords, students[0]["coords"], "University", students[0]["point_label"], lineColor);
+      await buildPath(universityCoords, students[0]["coords"], "University", students[0]["point_label"], lineColor)
+        .then((path) => {
+          result = result.concat(path);
+        });
       exec_count++;
-      await buildPath(students[0]["coords"], universityCoords, students[0]["point_label"], "University", lineColor);
+      await buildPath(students[0]["coords"], universityCoords, students[0]["point_label"], "University", lineColor)
+        .then((path) => {
+          result = result.concat(path);
+        });
     }
+
+    return result;
   }
 
   function assignStudentsToDrivers(locations, numberOfDrivers) {
@@ -402,7 +413,7 @@
     return result;
   }
 
-  async function fetchAndDraw(startPoint, endPoint, lineColor) {
+  async function getCoordsAndDraw(startPoint, endPoint, lineColor) {
     var query = startPoint.geometry.coordinates[1] + "," +
       startPoint.geometry.coordinates[0] + ":" +
       endPoint.geometry.coordinates[1] + "," +
@@ -427,8 +438,6 @@
         //Add each turn to the array
         routeCoordinates = routeCoordinates.concat(legCoordinates);
       });
-
-      animatedRoutePaths.push(routeCoordinates);
 
       //Add route line to the datasource
       datasource.add({
@@ -462,7 +471,7 @@
     //Add the data to the data source.
     datasource.add([startPoint, endPoint]);
 
-    return await fetchAndDraw(startPoint, endPoint, lineColor);
+    return await getCoordsAndDraw(startPoint, endPoint, lineColor);
   }
 
   function calculateDistance(pointA, pointB) {
