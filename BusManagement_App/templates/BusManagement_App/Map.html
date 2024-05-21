@@ -304,18 +304,17 @@
         locations[studentName] = locationToInsert;
       });
 
-      let busDrivers = assignStudentsToDrivers(locations, 3);
+      let busDrivers = assignStudentsToDrivers(locations, {{ number_of_drivers }});
 
       for (let i = 0; i < busDrivers.length; i++) {
         let driverPath = await createBusRoute(busDrivers[i]["driver_id"], busDrivers[i]["students"], driverPathColors[i]);
         let totalDistance = calculateTotalRouteDistance(driverPath);
-        let routeTime = totalDistance * 1000;
-        console.log(totalDistance)
+        let routeTime = totalDistance * 5000;
 
         await createAnimation(busDrivers[i]["driver_id"], driverPath, routeTime);
       }
 
-      stopAnimations();
+      setTimeout(stopAnimations, 500);
     });
   }
 
@@ -367,6 +366,10 @@
 
   function assignStudentsToDrivers(locations, numberOfDrivers) {
     let drivers = [];
+
+    if (numberOfDrivers > Object.entries(locations).length) {
+      numberOfDrivers = Object.entries(locations).length;
+    }
 
     for (let i = 0; i < numberOfDrivers; i++) {
       drivers.push({"driver_id": i, "students": []});
@@ -499,7 +502,6 @@
   }
 
   function calculateTotalRouteDistance(route) {
-    console.log(route)
     let totalDistance = 0;
     for (let i = 0; i < route.length - 1; i++) {
         totalDistance += calculateDistance(route[i], route[i+1]);
@@ -552,7 +554,7 @@
 {% block content %}
 <style>
   #myMap {
-    height: 400px;
+    height: 80%;
     margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;

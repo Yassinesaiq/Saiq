@@ -17,7 +17,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth import logout
-from .forms import ParentForm 
+from .forms import ParentForm
 from .models import SafetyCheck,SecondaryAddressRequest
 from .forms import SafetyCheckForm,SecondaryAddressRequestForm
 from .models import Schedule, Tarif
@@ -28,7 +28,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from django.template.response import TemplateResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import ChauffeurForm  
+from .forms import ChauffeurForm
 from django.http import JsonResponse
 from django.conf import settings
 from .models import GeocodedAddress
@@ -39,7 +39,7 @@ logging.basicConfig(level=logging.INFO,format="%(asctime)s [%(levelname)s] %(mes
 
 def get_geojson_data(request):
     addresses = GeocodedAddress.objects.all()
-    
+
     features = []
     for address in addresses:
         features.append({
@@ -179,9 +179,12 @@ def my_view(request):
 
     geojson_data = get_geocoded_addresses_for_map()
     second_addresses = get_second_addresses_for_map()
+    number_of_drivers = Bus.objects.count()
+
+    print(number_of_drivers)
 
     logger.debug(f"geojson_data: {geojson_data}")
-    
+
     response = HttpResponse()
     response.set_cookie(
         'geocode_session',
@@ -189,8 +192,8 @@ def my_view(request):
         samesite='None',  # Set SameSite attribute
         secure=True  # Set Secure attribute
     )
-    return render(request, 'BusManagement_App/Map.html', {'geojson_data': geojson_data, "second_addresses": second_addresses})
-    
+    return render(request, 'BusManagement_App/Map.html', {'geojson_data': geojson_data, "second_addresses": second_addresses, "number_of_drivers": number_of_drivers})
+
 
 def get_routes_api(request):
     # Votre liste de routes avec les adresses à convertir
@@ -204,7 +207,7 @@ def get_routes_api(request):
         start_geocode = requests.get(
             f"https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key={settings.AZURE_MAPS_KEY}&query={route.start_point}"
         ).json()
-        
+
         # Appel à l'API de géocodage pour le point d'arrivée
         end_geocode = requests.get(
             f"https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key={settings.AZURE_MAPS_KEY}&query={route.end_point}"
@@ -248,7 +251,7 @@ class StudentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
     fields = ['first_name', 'last_name', 'grade', 'address', 'distance_to_school', 'has_special_needs', 'temporary_disability']
     template_name = 'student/student_form.html'
     permission_required = 'app.add_student'
-    
+
     def form_valid(self, form):
         # Instance de l'élève sans sauvegarde en base de données
         self.object = form.save(commit=False)
@@ -408,7 +411,7 @@ class SignupView(APIView):
 
 def user_logout(request):
     logout(request)
-    return redirect('home') 
+    return redirect('home')
 
 @login_required
 def user_dashboard(request):
@@ -491,7 +494,7 @@ def ajouter_parent(request):
 @login_required
 def modifier_parent(request, parent_id):
     parent = get_object_or_404(Parent, id=parent_id)
-    
+
     if request.method == 'POST':
         form = ParentForm(request.POST, instance=parent)
         if form.is_valid():
@@ -499,17 +502,17 @@ def modifier_parent(request, parent_id):
             return redirect('director_dashboard')
     else:
         form = ParentForm(instance=parent)
-    
+
     return render(request, 'BusManagement_App/modifier_parent.html', {'form': form})
 
 @login_required
 def supprimer_parent(request, parent_id):
     parent = get_object_or_404(Parent, id=parent_id)
-    
+
     if request.method == 'POST':
         parent.delete()
         return redirect('director_dashboard')
-    
+
     return render(request, 'BusManagement_App/supprimer_parent.html', {'parent': parent})
 
 from django.shortcuts import render, redirect
@@ -674,7 +677,7 @@ def update_parent_email(request):
             return redirect('update_parent_email')
     else:
         form = ParentEmailForm(instance=parent)
-    
+
     return render(request, 'BusManagement_App/parent_parametre.html', {'form': form})
 
 from django.http import JsonResponse
@@ -695,7 +698,7 @@ def get_azure_maps_token(request):
     else:
         # If the request fails, return an error response
         return JsonResponse({'error': 'Failed to retrieve Azure Maps token'}, status=response.status_code)
-    
+
 
 # BusManagement_App/views.py
 
@@ -712,19 +715,19 @@ from django.utils import timezone
 
 def update_address(request):
     secondary_address_request = get_object_or_404(SecondaryAddressRequest)
-    
+
     if request.method == 'POST':
         form = SecondaryAddressRequestForm(request.POST, instance=secondary_address_request)
         if form.is_valid():
             form.save()
-            
+
             # Update the expiration date based on the duration provided by the user
             update_expiration_date(secondary_address_request)
 
             return redirect('parent_dashboard')  # Redirect to parent dashboard or any other desired URL
     else:
         form = SecondaryAddressRequestForm(instance=secondary_address_request)
-    
+
     return render(request, 'BusManagement_App/update_address.html', {'form': form})
 
 
@@ -732,7 +735,7 @@ def update_expiration_date(secondary_address_request):
     # Calculate the expiration date based on the current date and the duration in days
     current_date = timezone.now()
     expiration_date = current_date + timedelta(days=secondary_address_request.duration)
-    
+
     # Store the expiration date in the model
     secondary_address_request.expiration_date = expiration_date
     secondary_address_request.save()
