@@ -19,8 +19,10 @@
 </style>
 
 <h2>Update Address</h2>
-<label for="search-address">Search address</label>
-<input id="search-address" style="width: 80%;"></input>
+<div style="display: flex; flex-direction: row; align-items: center; margin-bottom: 8px;">
+    <label for="search-address" style="flex-shrink: 0; margin-right: 14px;"><b>Search address</b></label>
+    <input id="search-address" style="width: 100%"></input>
+</div>
 <div id="myMap"></div>
 <form method="post">
     {% csrf_token %}
@@ -40,7 +42,7 @@
 <script>
     const apiKey = 'tX8QollQ26xGAEAJ6w3YSI3mHjr65fNRkPAgrgn84Q4';
     const apiUrl = `https://atlas.microsoft.com/search/address/json?api-version=1.0&query={address}&subscription-key=${apiKey}&maxFuzzyLevel=1&language={language}`;
-    var geocodeServiceUrlTemplate = `https:///atlas.microsoft.com/search/{searchType}/json?typeahead=true&api-version=1.0&query={query}&language={language}&lon={lon}&lat={lat}&view=Auto&subscription-key=${apiKey}`;      
+    var geocodeServiceUrlTemplate = `https:///atlas.microsoft.com/search/{searchType}/json?typeahead=true&api-version=1.0&query={query}&language={language}&lon={lon}&lat={lat}&view=Auto&subscription-key=${apiKey}`;
     var universityCoords = [-4.9800265037012945, 34.03450501818707];
     var map;
     var datasource;
@@ -51,7 +53,26 @@
 
         lonEl.parentNode.style.display = "none";
         latEl.parentNode.style.display = "none";
+    }
 
+    function createPointAddress() {
+        let lonEl = document.getElementById("id_longitude");
+        let latEl = document.getElementById("id_latitude");
+
+        var marker = new atlas.HtmlMarker({
+            color: 'Red',
+            text: '',
+            position: [lonEl.value, latEl.value],
+        });
+
+        map.markers.add(marker);
+    }
+
+    function fillAddressInSearchBar() {
+        let address = document.getElementById("id_address");
+        let searchAddress = document.getElementById("search-address");
+
+        searchAddress.value = address.value;
     }
 
     async function checkIfAddressExists(address) {
@@ -68,7 +89,6 @@
             }
 
             const data = await response.json();
-            console.log(data);
 
             if (data && data.results && data.results.length > 0) {
                 const highQualityMatches = data.results.filter(result => result.score >= 0.9);
@@ -119,14 +139,14 @@
                     text: '',
                     position: coords,
                 });
-            
+
             map.markers.add(marker);
 
             //Create a URL to the Azure Maps search service to perform the search.
             var requestUrl = geocodeServiceUrlTemplate.replace('{query}', `${coords[1]}, ${coords[0]}`)
                 // .replace('{searchType}', document.querySelector('input[name="searchTypeGroup"]:checked').value)
                 .replace('{searchType}', "address/reverse")
-                
+
                 .replace('{language}', 'fr-FR')
                 .replace('{lon}', coords[0])    //Use a lat and lon value of the center the map to bais the results to the current map view.
                 .replace('{lat}', coords[1])
@@ -168,7 +188,7 @@
                 var requestUrl = geocodeServiceUrlTemplate.replace('{query}', encodeURIComponent(request.term))
                     // .replace('{searchType}', document.querySelector('input[name="searchTypeGroup"]:checked').value)
                     .replace('{searchType}', "address")
-                    
+
                     .replace('{language}', 'fr-FR')
                     .replace('{lon}', universityCoords[0])    //Use a lat and lon value of the center the map to bais the results to the current map view.
                     .replace('{lat}', universityCoords[1])
@@ -231,9 +251,13 @@
 
     $(document).ready(function() {
         initAddressInput();
-        hideCoords()
+        hideCoords();
+        createPointAddress();
+        fillAddressInSearchBar();
     });
 
-    hideCoords()
+    hideCoords();
+    createPointAddress();
+    fillAddressInSearchBar();
 </script>
 {% endblock %}
