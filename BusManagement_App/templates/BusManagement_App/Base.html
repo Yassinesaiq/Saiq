@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Gestion des Bus Scolaires{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
     <style>
         body, html {
             margin: 0;
@@ -85,14 +86,14 @@
             <a href="{% url 'list_tarifs' %}">Tarifs</a>
             <a href="{% url 'student_list' %}">Etudiants</a>
             <a href="{% url 'map' %}">Map</a>
-            
+
         </div>
         {% if user.is_authenticated %}
             <button class="logout-button" onclick="location.href='{% url 'logout' %}'">
                 Déconnexion
             </button>
         {% endif %}
-    </div>    
+    </div>
     <div class="content">
         {% block content %}
         {% endblock %}
