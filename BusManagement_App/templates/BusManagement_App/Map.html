@@ -304,12 +304,18 @@
         locations[studentName] = locationToInsert;
       });
 
-      let busDrivers = assignStudentsToDrivers(locations, 2);
+      let busDrivers = assignStudentsToDrivers(locations, 3);
 
       for (let i = 0; i < busDrivers.length; i++) {
         let driverPath = await createBusRoute(busDrivers[i]["driver_id"], busDrivers[i]["students"], driverPathColors[i]);
-        createAnimation(busDrivers[i]["driver_id"], driverPath, 25_000);
+        let totalDistance = calculateTotalRouteDistance(driverPath);
+        let routeTime = totalDistance * 1000;
+        console.log(totalDistance)
+
+        await createAnimation(busDrivers[i]["driver_id"], driverPath, routeTime);
       }
+
+      stopAnimations();
     });
   }
 
@@ -490,6 +496,15 @@
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return 6371 * c; // Radius of earth in km. Use 3956 if you want miles
+  }
+
+  function calculateTotalRouteDistance(route) {
+    console.log(route)
+    let totalDistance = 0;
+    for (let i = 0; i < route.length - 1; i++) {
+        totalDistance += calculateDistance(route[i], route[i+1]);
+    }
+    return totalDistance;
   }
 
   function generateRoutes(locationsInfo) {
