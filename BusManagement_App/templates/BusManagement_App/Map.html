@@ -20,6 +20,24 @@
   // Animation logic
   var animations = {};
 
+  const N = 1; // Threshold distance for logging
+
+  function doNTimes(callback, times) {
+    var done = false;
+    var count = 0;
+
+    return function() {
+      if (!done) {
+        callback.apply(this, arguments);
+        count++;
+
+        if (count >= times) {
+          done = true;
+        }
+      }
+    };
+  }
+
   async function createAnimation(busDriverId, path, animationTime) {
     //Load a custom image icon into the map resources.
     map.imageSprite.createFromTemplate('arrow-icon', 'marker-arrow', 'teal', '#fff').then(function () {
@@ -97,6 +115,29 @@
         animations[busDriverId]["path"] = animations[busDriverId]["path"].concat(path);
       }
 
+      let notifyOnce = doNTimes(function() {
+
+        alert(`Bus driver ${busDriverId} is within ${N}km of a student.`);;
+      }, busDrivers[busDriverId].students.length);
+
+      animation.originalOnAnimationProgress = animation.onAnimationProgress;
+
+      // Log when the distance from a marker to a point is less than N
+      animation.onAnimationProgress = function (t) {
+        let result = animation.originalOnAnimationProgress(t);
+
+        // Check distance for each student assigned to this busDriverId and notify if within N meters
+        if (result.position) {
+          busDrivers[busDriverId].students.forEach(student => {
+            if (calculateDistance(result.position, student.coords) < N) {
+              notifyOnce(student);
+            }
+          });
+        }
+
+        return result;
+      };
+
     });
   }
 
@@ -172,6 +213,7 @@
   var map;
   var datasource;
   var geojson;
+  var busDrivers;
   var secondaryAddresses = {{ second_addresses|safe }};
   var universityCoords;
   var driverPathColors = ["#0e09ae", "#0965ae", "#5209ae", "#06a624"];
@@ -304,12 +346,12 @@
         locations[studentName] = locationToInsert;
       });
 
-      let busDrivers = assignStudentsToDrivers(locations, {{ number_of_drivers }});
+      busDrivers = assignStudentsToDrivers(locations, {{ number_of_drivers }});
 
       for (let i = 0; i < busDrivers.length; i++) {
         let driverPath = await createBusRoute(busDrivers[i]["driver_id"], busDrivers[i]["students"], driverPathColors[i]);
         let totalDistance = calculateTotalRouteDistance(driverPath);
-        let routeTime = totalDistance * 5000;
+        let routeTime = totalDistance * 1000;
 
         await createAnimation(busDrivers[i]["driver_id"], driverPath, routeTime);
       }
