@@ -6,17 +6,18 @@
     <title>Accueil</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-            background-image: url('{% static "BusManagement_App/AA.jpg" %}');
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        body, html {
+            height: 100%;
             margin: 0;
         }
+    
+        .bg-video {
+            position: fixed; 
+            right: 0; 
+            bottom: 0;
+            min-width: 100%; 
+            min-height: 100%;
+        }    
 
         .container {
             background: rgba(255, 255, 255, 0.501);
@@ -70,6 +71,10 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <video autoplay muted loop class="bg-video">
+        <source src="{% static 'BusManagement_App/background_1.mp4' %}" type="video/mp4">
+        Votre navigateur ne supporte pas les vidéos HTML5.
+    </video>
     <div class="container">
         <h2>Bienvenue dans l'app BusBrain</h2>
         <form action="{% url 'login_user' %}" method="post">

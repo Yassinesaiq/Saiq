@@ -39,7 +39,6 @@
             </div>
         </div>
 
-        <!-- Section Bus -->
         <div class="col-md-4 mb-3">
             <div class="card dashboard-card">
                 <div class="card-header dashboard-header">
@@ -47,11 +46,31 @@
                 </div>
                 <div class="card-body dashboard-body">
                     <a href="{% url 'ajouter_bus' %}" class="btn btn-success dashboard-btn">Ajouter un Bus</a>
-                    <!-- Add your bus list or table here -->
+                    <div class="table-responsive">
+                        <table class="table dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Marque de Bus</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bus in buses %}
+                                <tr>
+                                    <td>{{ bus.model }}</td>
+                                    <td>
+                                        <a href="{% url 'bus_edit' pk=bus.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                        <a href="{% url 'bus_delete' pk=bus.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Section Chauffeurs -->
         <div class="col-md-4 mb-3">
             <div class="card dashboard-card">
@@ -60,12 +79,30 @@
                 </div>
                 <div class="card-body dashboard-body">
                     <a href="{% url 'ajouter_chauffeur' %}" class="btn btn-success dashboard-btn">Ajouter un Chauffeur</a>
-                    <!-- Add your chauffeurs list or table here -->
+                    <div class="table-responsive">
+                        <table class="table dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chauffeur in chauffeurs %}
+                                <tr>
+                                    <td>{{ chauffeur.last_name }}</td>
+                                    <td>
+                                        <a href="{% url 'driver_edit' pk=chauffeur.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                        <a href="{% url 'driver_delete' pk=chauffeur.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
 <style>
     body {

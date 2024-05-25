@@ -3,6 +3,7 @@ from .models import  Bus, Driver,Parent
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from .models import SafetyCheck,SecondaryAddressRequest,Schedule, Tarif
+from .models import SecondaryAddressRequest, Student
 
 class ParentForm(forms.ModelForm):
     # Ajouter les champs utilisateur au ModelForm
@@ -83,3 +84,11 @@ class SecondaryAddressRequestForm(forms.ModelForm):
     class Meta:
         model = SecondaryAddressRequest
         fields = ['student', 'address', 'is_approved', "duration", "longitude", "latitude"]
+    def __init__(self, *args, **kwargs):
+        parent = kwargs.pop('parent', None)
+        super(SecondaryAddressRequestForm, self).__init__(*args, **kwargs)
+        
+        if parent:
+            self.fields['student'].queryset = Student.objects.filter(parent=parent)
+        else:
+            self.fields['student'].queryset = Student.objects.none() 

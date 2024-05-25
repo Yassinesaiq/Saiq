@@ -1,0 +1,39 @@
+
+<div class="container my-4">
+    <div class="dashboard-content">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-users"></i> Étudiants à bord</h5>
+                            <ul class="list-group">
+                                {% for student in students %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ student.first_name }} {{ student.last_name }} {{ student.grade }}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checked_in_{{ student.id }}" name="checked_in_{{ student.id }}">
+                                            <label class="form-check-label" for="checked_in_{{ student.id }}">
+                                                Monté dans le bus
+                                            </label>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                                {% if not students %}
+                                    <li class="list-group-item">
+                                        Aucun étudiant trouvé.
+                                    </li>
+                                {% endif %}
+                            </ul>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -28,32 +28,36 @@ def geocode_address(address, subscription_key):
 
 # Fonction pour géocoder et enregistrer les adresses des étudiants
 def geocode_and_save_addresses(student):
+    # Assurez-vous que l'étudiant est éligible pour le transport avant de continuer
+    if not student.is_eligible_for_transport:
+        return f"L'adresse de l'étudiant {student.address} ne sera pas enregistrée car il/elle n'est pas éligible pour le transport."
+
     # Récupérer l'adresse de l'étudiant
     address = student.address
-    
 
-    logger.debug(f"Geocoding address: {address}")
+    logger.debug(f"Géocodage de l'adresse : {address}")
     # Géocodage de l'adresse
-    result = geocode_address(address,subscription_key)
+    result = geocode_address(address, subscription_key)
     latitude = result['results'][0]['position']['lat']
     longitude = result['results'][0]['position']['lon']
     print("***************************************")
-    print(latitude,longitude)
+    print(latitude, longitude)
 
     # Vérifier si les coordonnées de latitude et de longitude ont été récupérées avec succès
     if latitude is not None and longitude is not None:
-        logger.debug(f"Geocoded coordinates: {latitude}, {longitude}")
+        logger.debug(f"Coordonnées géocodées : {latitude}, {longitude}")
 
-        # Créer une nouvelle instance de GeocodedAddress
+        # Créer une nouvelle instance de GeocodedAddress seulement si l'étudiant est éligible
         GeocodedAddress.objects.create(
             original_address=address,
             latitude=latitude,
             longitude=longitude,
             student=student
-            
         )
+        return f"L'adresse de l'étudiant {student.address} a été géocodée et enregistrée avec succès."
     else:
-        logger.warning(f"Failed to geocode the address: {address}")
+        logger.warning(f"Échec du géocodage de l'adresse : {address}")
+        return "Échec du géocodage de l'adresse."
 
 
 
@@ -74,9 +78,14 @@ import logging
 # Define a logger
 logger = logging.getLogger(__name__)
 
-def get_geocoded_addresses_for_map():
+def get_geocoded_addresses_for_map(parent=None):
     # Retrieve geocoded addresses from the database
-    geocoded_addresses = GeocodedAddress.objects.all()
+    if parent:
+        geocoded_addresses = GeocodedAddress.objects.filter(student__parent=parent)
+        print(f"Filtered Geocoded Addresses for Parent {parent.id}: {list(geocoded_addresses)}")
+    else:
+        geocoded_addresses = GeocodedAddress.objects.all()
+        print("All Geocoded Addresses: ", list(geocoded_addresses))
 
     # Prepare data in GeoJSON format
     features = []
@@ -99,15 +108,16 @@ def get_geocoded_addresses_for_map():
         "type": "FeatureCollection",
         "features": features
     }
-    print("**********************************")
+    print("********************************** ici ")
     logger.debug(f"Geojson data: {geojson_data}")
     print(f"Geojson data: {geojson_data}")
     return json.dumps(geojson_data)
 
 
-def get_second_addresses_for_map():
-    # Retrieve geocoded addresses from the database
-    geocoded_addresses = SecondaryAddressRequest.objects.all()
+def get_second_addresses_for_map(parent=None):
+
+    geocoded_addresses = SecondaryAddressRequest.objects.filter(student__parent=parent)
+
 
     # Prepare data in GeoJSON format
     features = []
@@ -130,7 +140,7 @@ def get_second_addresses_for_map():
         "type": "FeatureCollection",
         "features": features
     }
-    print("**********************************")
+    print("********************************** here ")
     logger.debug(f"Geojson data: {geojson_data}")
     print(f"Geojson data: {geojson_data}")
     return json.dumps(geojson_data)

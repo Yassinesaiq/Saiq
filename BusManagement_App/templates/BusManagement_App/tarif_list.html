@@ -1,27 +1,37 @@
 {% extends 'BusManagement_App/Base.html' %}
 
 {% block content %}
-  <h2>Liste des Tarifs</h2>
-  <a href="{% url 'add_tarif' %}">Ajouter un nouveau tarif</a>
-  <table>
-    <thead>
-      <tr>
-        <th>Route</th>
-        <th>Montant</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for tarif in object_list %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <h2>Liste des Tarifs</h2>
+    </div>
+    <div class="col-md-4 text-right">
+      <a href="{% url 'add_tarif' %}" class="btn btn-primary">Ajouter un nouveau tarif</a>
+    </div>
+  </div>
+  <div class="table-responsive mt-3">
+    <table class="table table-striped">
+      <thead>
         <tr>
-          <td>{{ tarif.route }}</td>
-          <td>{{ tarif.montant }}</td>
-          <td>
-            <a href="{% url 'update_tarif' tarif.pk %}">Modifier</a> |
-            <a href="{% url 'delete_tarif' tarif.pk %}">Supprimer</a>
-          </td>
+          <th>Route</th>
+          <th>Montant</th>
+          <th>Actions</th>
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for tarif in object_list %}
+          <tr>
+            <td>{{ tarif.route }}</td>
+            <td>{{ tarif.montant }}</td>
+            <td>
+              <a href="{% url 'update_tarif' tarif.pk %}" class="btn btn-primary btn-sm">Modifier</a>
+              <a href="{% url 'delete_tarif' tarif.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

@@ -80,6 +80,7 @@ urlpatterns = [
     path('map_parent/', views.my_view_Parent, name='map_parent'),
     path('map_driver/', views.my_view_Driver, name='map_driver'),
     path('update_address/', views.update_address, name='update_address'),
+    path('safety_checking/', views.driver_dashboard, name='safety_checking'),
 
  
 

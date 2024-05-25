@@ -1,550 +1,628 @@
-{% extends 'BusManagement_App/driver_dashboard.html' %}
-
+{% extends 'BusManagement_App/driver_dashboard.html' %} {% load static %}
 {% block extra_js %}
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js" async defer></script>
-    <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
-    <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js" async defer></script>
-    <script src="/lib/azure-maps/azure-maps-animations.min.js"></script>
+<link
+  href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css"
+  rel="stylesheet"
+/>
+<script
+  src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js"
+  async
+  defer
+></script>
+<link
+  href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css"
+  rel="stylesheet"
+/>
+<script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js"></script>
+<script src="{% static 'js/azure-maps-animations.min.js' %}"></script>
 
-    <script>
-        // Animation logic
-        var animations = {};
+<script>
+  // Animation logic
+  var animations = {};
 
-        //Create an array of points to define a path to animate along.
-        var animatedRoutePaths = [];
+  async function createAnimation(busDriverId, path, animationTime) {
+    //Load a custom image icon into the map resources.
+    map.imageSprite.createFromTemplate('arrow-icon', 'marker-arrow', 'teal', '#fff').then(function () {
 
-        function createAnimation(busDriverId, pathNum, animationTime) {
-            let path;
+      //Create data sources and add them to the map.
+      let lineSource = new atlas.source.DataSource();
+      let pinSource = new atlas.source.DataSource();
+      map.sources.add([lineSource, pinSource]);
 
-            if (animatedRoutePaths.length < pathNum) {
-                setTimeout(() => {
-                    createAnimation(busDriverId, pathNum, animationTime)
-                }, 200);
-            }
+      //Create a layer to render a symbol which we will animate.
+      map.layers.add(new atlas.layer.SymbolLayer(pinSource, null, {
+        iconOptions: {
+          //Pass in the id of the custom icon that was loaded into the map resources.
+          image: 'arrow-icon',
 
-            path = animatedRoutePaths[pathNum];
+          //Anchor the icon to the center of the image.
+          anchor: 'center',
 
-            //Load a custom image icon into the map resources.
-            map.imageSprite.createFromTemplate('arrow-icon', 'marker-arrow', 'teal', '#fff').then(function () {
+          //Rotate the icon based on the rotation property on the point data.
+          //The arrow icon being used in this case points down, so we have to rotate it 180 degrees.
+          rotation: ['+', 180, ['get', 'heading']],
 
-            //Create data sources and add them to the map.
-            let lineSource = new atlas.source.DataSource();
-            let pinSource = new atlas.source.DataSource();
-            map.sources.add([lineSource, pinSource]);
+          //Have the rotation align with the map.
+          rotationAlignment: 'map',
 
-            //Create a layer to render the path.
-            map.layers.add(new atlas.layer.LineLayer(lineSource, null, {
-                strokeColor: 'DodgerBlue',
-                strokeWidth: 3
-            }));
+          //For smoother animation, ignore the placement of the icon. This skips the label collision calculations and allows the icon to overlap map labels.
+          ignorePlacement: true,
 
-            //Create a line for the path and add it to the data source.
-            lineSource.add(new atlas.data.LineString(path));
+          //For smoother animation, allow symbol to overlap all other symbols on the map.
+          allowOverlap: true
+        },
+        textOptions: {
+          //For smoother animation, ignore the placement of the text. This skips the label collision calculations and allows the text to overlap map labels.
+          ignorePlacement: true,
 
-            //Create a layer to render a symbol which we will animate.
-            map.layers.add(new atlas.layer.SymbolLayer(pinSource, null, {
-                iconOptions: {
-                    //Pass in the id of the custom icon that was loaded into the map resources.
-                    image: 'arrow-icon',
+          //For smoother animation, allow text to overlap all other symbols on the map.
+          allowOverlap: true
+        }
+      }));
 
-                    //Anchor the icon to the center of the image.
-                    anchor: 'center',
+      //Create a pin and wrap with the shape class and add to data source.
+      let pin = new atlas.Shape(new atlas.data.Feature(new atlas.data.Point(path)));
+      pinSource.add(pin);
 
-                    //Rotate the icon based on the rotation property on the point data.
-                    //The arrow icon being used in this case points down, so we have to rotate it 180 degrees.
-                    rotation: ['+', 180, ['get', 'heading']],
+      //Create the animation.
+      let animation = atlas.animations.moveAlongPath(path, pin, {
+        //Capture metadata so that data driven styling can be done.
+        captureMetadata: true,
 
-                    //Have the rotation align with the map.
-                    rotationAlignment: 'map',
+        duration: animationTime,
+        loop: document.getElementById('loopAnimation').checked,
+        reverse: document.getElementById('reverseAnimation').checked,
+        rotationOffset: (document.getElementById('reverseAnimation').checked) ? 90 : 0,
 
-                    //For smoother animation, ignore the placement of the icon. This skips the label collision calculations and allows the icon to overlap map labels. 
-                    ignorePlacement: true,
+        //If following enabled, add a map to the animation.
+        map: (document.getElementById('followSymbol').checked) ? map : null,
 
-                    //For smoother animation, allow symbol to overlap all other symbols on the map.
-                    allowOverlap: true
-                },
-                textOptions: {
-                    //For smoother animation, ignore the placement of the text. This skips the label collision calculations and allows the text to overlap map labels.
-                    ignorePlacement: true,
+        //Camera options to use when following.
+        zoom: 15,
+        pitch: 45,
+        rotate: true
+      });
 
-                    //For smoother animation, allow text to overlap all other symbols on the map.
-                    allowOverlap: true
-                }
-            }));
+      if (animations[busDriverId] == undefined) {
+          animations[busDriverId] = {
+            path: path,
+            pin: pin,
+            lineSource: lineSource,
+            pinSource: pinSource,
+            animationTime: animationTime,
+            animation: animation
+          };
+      } else {
+        // Extend the path array with new route path
+        animations[busDriverId]["path"] = animations[busDriverId]["path"].concat(path);
+      }
 
-            //Create a pin and wrap with the shape class and add to data source.
-            let pin = new atlas.Shape(new atlas.data.Feature(new atlas.data.Point(path[0])));
-            pinSource.add(pin);
+    });
+  }
 
-            console.log(path)
-            //Create the animation.
-            let animation = atlas.animations.moveAlongPath(path, pin, { 
-                //Capture metadata so that data driven styling can be done.
-                captureMetadata: true,
-                
-                duration: animationTime, 
-                loop: document.getElementById('loopAnimation').checked,
-                reverse: document.getElementById('reverseAnimation').checked,
-                rotationOffset: (document.getElementById('reverseAnimation').checked)? 90: 0,
 
-                //If following enabled, add a map to the animation.
-                map: (document.getElementById('followSymbol').checked)? map: null,
+  function toggleFollow() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
 
-                //Camera options to use when following.
-                zoom: 15,
-                pitch: 45,
-                rotate: true
+      animation.setOptions({
+        map: (animation.getOptions().map) ? null : map
+      });
+    }
+  }
+
+  function toggleFollowOffset() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
+
+      animation.setOptions({
+        rotationOffset: (animation.getOptions().rotationOffset === 0) ? 90 : 0
+      });
+    }
+  }
+
+  function toggleLooping() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
+
+      animation.setOptions({
+        loop: !animation.getOptions().loop
+      });
+    }
+  }
+
+  function toggleReverse() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
+
+      animation.setOptions({
+        reverse: !animation.getOptions().reverse
+      });
+    }
+  }
+
+  function playAnimations() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
+      animation.play();
+    }
+  }
+
+  function pauseAnimations() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
+      animation.pause();
+    }
+  }
+
+  function stopAnimations() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
+      animation.stop();
+    }
+  }
+
+  function resetAnimations() {
+    for (const [driverId, routeData] of Object.entries(animations)) {
+      let animation = routeData["animation"];
+      animation.reset();
+    }
+  }
+
+  // Map logic
+  var map;
+  var datasource;
+  var geojson;
+  var secondaryAddresses = {{ second_addresses|safe }};
+  var universityCoords;
+  var driverPathColors = ["#0e09ae", "#0965ae", "#5209ae", "#06a624"];
+  var exec_count = 1;
+
+  async function GetMap() {
+    map = new atlas.Map('myMap', {
+      center: [-5.0033, 34.0345],
+      zoom: 10,
+      authOptions: {
+        authType: 'subscriptionKey',
+        subscriptionKey: 'tX8QollQ26xGAEAJ6w3YSI3mHjr65fNRkPAgrgn84Q4'
+      }
+    });
+
+    map.events.add('ready', async function () {
+      datasource = new atlas.source.DataSource();
+      map.sources.add(datasource);
+
+      geojson = {{ geojson_data|safe }};
+      datasource.add(geojson);
+
+      universityCoords = [-4.9800265037012945, 34.03450501818707];
+
+      var universityFeature = {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": universityCoords
+        },
+        "properties": {
+          "name": "Université Sidi Mohammed ben Abdellah"
+        }
+      };
+      datasource.add(universityFeature);
+
+      var resultLayer = new atlas.layer.SymbolLayer(datasource, null, {
+        iconOptions: {
+          image: 'pin-round-darkblue',
+          anchor: 'center',
+          allowOverlap: true
+        },
+        textOptions: {
+          textField: ['coalesce', ['get', 'student_name'], ['get', 'name']],
+          offset: [0, -3],
+          anchor: "top",
+          color: 'black',
+          size: 13
+        }
+      });
+
+      map.layers.add(resultLayer);
+
+      var popup = new atlas.Popup({
+        pixelOffset: [0, -20],
+        closeButton: false
+      });
+
+      map.events.add('mouseover', resultLayer, function (e) {
+        if (e.shapes && e.shapes.length > 0) {
+          if (e.shapes[0].geometry && e.shapes[0].geometry.coordinates) {
+            var properties = e.shapes[0].getProperties();
+            popup.setOptions({
+              content: properties.name,
+              position: e.shapes[0].geometry.coordinates
             });
+            popup.open(map);
+          }
+        }
+      });
 
-            animations[busDriverId] = {
-                path: path,
-                pin: pin,
-                lineSource: lineSource,
-                pinSource: pinSource,
-                animationTime: animationTime,
-                animation: animation
-            };
+      map.events.add('mouseout', resultLayer, function (e) {
+        popup.close();
+      });
+
+      // Vérifiez que le SearchControl est bien chargé
+      if (atlas.control && atlas.control.SearchControl) {
+        var searchControl = new atlas.control.SearchControl({
+          language: 'fr-FR',
+          placeholder: 'Rechercher une adresse...',
+          showMarker: true,
+          showPopup: true
         });
+        map.controls.add(searchControl, {
+          position: 'top-right'
+        });
+      } else {
+        console.error('SearchControl is not available.');
+      }
+
+      //Add a layer for rendering the route lines and have it render under the map labels.
+      map.layers.add(new atlas.layer.LineLayer(datasource, null, {
+        strokeColor: ['get', 'myColor'],
+        strokeWidth: 5,
+        lineJoin: 'round',
+        lineCap: 'round'
+      }), 'labels');
+
+      //Add a layer for rendering point data.
+      map.layers.add(new atlas.layer.SymbolLayer(datasource, null, {
+        iconOptions: {
+          image: ['get', 'icon'],
+          allowOverlap: true
+        },
+        textOptions: {
+          textField: ['get', 'title'],
+          offset: [0, 1.2]
+        },
+        filter: ['any', ['==', ['geometry-type'], 'Point'], ['==', ['geometry-type'], 'MultiPoint']] //Only render Point or MultiPoints in this layer.
+      }));
+
+      let locations = {};
+
+      geojson["features"].forEach((location) => {
+        let locationToInsert = location["geometry"]["coordinates"];
+        let studentName = location["properties"]["student_name"];
+
+        for (const [tempStudentName, locationArr] of Object.entries(locations)) {
+          if (locationArr == location["geometry"]["coordinates"]) {
+            return;
+          }
         }
 
-        function toggleFollow(){
-            for (const [driverId, routeData] of Object.entries(animations)) {
-                let animation = routeData["animation"];
+        secondaryAddresses["features"].forEach((secondaryLocation) => {
+          if (location["properties"]["student_id"] == secondaryLocation["properties"]["student_id"]) {
+            locationToInsert = secondaryLocation["geometry"]["coordinates"];
+          }
+        });
 
-                animation.setOptions({
-                    map: (animation.getOptions().map)? null : map
-                });
-            }
+        locations[studentName] = locationToInsert;
+      });
+
+      let busDrivers = assignStudentsToDrivers(locations, {{ number_of_drivers }});
+
+      for (let i = 0; i < busDrivers.length; i++) {
+        let driverPath = await createBusRoute(busDrivers[i]["driver_id"], busDrivers[i]["students"], driverPathColors[i]);
+        let totalDistance = calculateTotalRouteDistance(driverPath);
+        let routeTime = totalDistance * 5000;
+
+        await createAnimation(busDrivers[i]["driver_id"], driverPath, routeTime);
+      }
+
+      setTimeout(stopAnimations, 500);
+    });
+  }
+
+  async function createBusRoute(driverId, students, lineColor) {
+    let result = [];
+
+    exec_count = 1;
+    if (students.length > 1) {
+      let routeCombination = [
+        {"coords": universityCoords, "point_label": "University"},
+        ...students,
+        {"coords": universityCoords, "point_label": "University"},
+      ];
+
+      let busRoute = await findShortestRoute(routeCombination, universityCoords);
+
+      let pointA = busRoute[0];
+      let pointB = busRoute[1];
+
+      for (let i = 1; i < busRoute.length; i++) {
+        if (isPathTooFar(pointA, pointB, 200)) {
+          pointB = busRoute[i + 1]
+          continue;
         }
 
-        function toggleFollowOffset(){
-            for (const [driverId, routeData] of Object.entries(animations)) {
-                let animation = routeData["animation"];
-
-                animation.setOptions({
-                    rotationOffset: (animation.getOptions().rotationOffset === 0)? 90 : 0
-                });
-            }
-        }
-
-        function toggleLooping(){
-            for (const [driverId, routeData] of Object.entries(animations)) {
-                let animation = routeData["animation"];
-
-                animation.setOptions({
-                    loop: !animation.getOptions().loop
-                });
-            }
-        }
-
-        function toggleReverse(){
-            for (const [driverId, routeData] of Object.entries(animations)) {
-                let animation = routeData["animation"];
-
-                animation.setOptions({
-                    reverse: !animation.getOptions().reverse
-                });
-            }
-        }
-
-
-        // Map logic
-        var map;
-        var datasource;
-        var geojson;
-        var secondaryAddresses = {{ second_addresses|safe }};
-        var universityCoords;
-        var driverPathColors = ["#0e09ae", "#0965ae", "#5209ae", "#06a624"];
-        var exec_count = 1;
-
-        function GetMap() {
-            map = new atlas.Map('myMap', {
-                center: [-5.0033, 34.0345],
-                zoom: 10,
-                authOptions: {
-                    authType: 'subscriptionKey',
-                    subscriptionKey: 'tX8QollQ26xGAEAJ6w3YSI3mHjr65fNRkPAgrgn84Q4'
-                }
+        await buildPath(pointA["coords"], pointB["coords"], `${pointA["point_label"]}`, `${pointB["point_label"]}`, lineColor)
+            .then((path) => {
+              result = result.concat(path);
             });
 
-            map.events.add('ready', function() {
-                datasource = new atlas.source.DataSource();
-                map.sources.add(datasource);
+        pointA = pointB;
+        pointB = busRoute[i + 1];
+        exec_count++;
+      }
+    } else {
+      await buildPath(universityCoords, students[0]["coords"], "University", students[0]["point_label"], lineColor)
+        .then((path) => {
+          result = result.concat(path);
+        });
+      exec_count++;
+      await buildPath(students[0]["coords"], universityCoords, students[0]["point_label"], "University", lineColor)
+        .then((path) => {
+          result = result.concat(path);
+        });
+    }
 
-                geojson = {{ geojson_data|safe }};
-                datasource.add(geojson);
+    return result;
+  }
 
-                universityCoords = [-4.9800265037012945, 34.03450501818707];
+  function assignStudentsToDrivers(locations, numberOfDrivers) {
+    let drivers = [];
 
-                var universityFeature = {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": universityCoords
-                    },
-                    "properties": {
-                        "name": "Université Sidi Mohammed ben Abdellah"
-                    }
-                };
-                datasource.add(universityFeature);
+    if (numberOfDrivers > Object.entries(locations).length) {
+      numberOfDrivers = Object.entries(locations).length;
+    }
 
-                var resultLayer = new atlas.layer.SymbolLayer(datasource, null, {
-                    iconOptions: {
-                        image: 'pin-round-darkblue',
-                        anchor: 'center',
-                        allowOverlap: true
-                    },
-                    textOptions: {
-                        textField: ['coalesce', ['get', 'student_name'], ['get', 'name']],
-                        offset: [0, -3],
-                        anchor: "top",
-                        color: 'black',
-                        size: 13
-                    }
-                });
+    for (let i = 0; i < numberOfDrivers; i++) {
+      drivers.push({"driver_id": i, "students": []});
+    }
 
-                map.layers.add(resultLayer);
+    let index = 0;
+    for (const [student, coords] of Object.entries(locations)) {
+      let currentDriver = drivers[index % numberOfDrivers];
 
-                var popup = new atlas.Popup({
-                    pixelOffset: [0, -20],
-                    closeButton: false
-                });
+      currentDriver["students"].push({"point_label": student, "coords": coords});
+      index++;
+    }
 
-                map.events.add('mouseover', resultLayer, function(e) {
-                    if (e.shapes && e.shapes.length > 0) {
-                        if (e.shapes[0].geometry && e.shapes[0].geometry.coordinates) {
-                            var properties = e.shapes[0].getProperties();
-                            popup.setOptions({
-                                content: properties.name,
-                                position: e.shapes[0].geometry.coordinates
-                            });
-                            popup.open(map);
-                        }
-                    }
-                });
+    return drivers;
+  }
 
-                map.events.add('mouseout', resultLayer, function(e) {
-                    popup.close();
-                });
+  function isPathTooFar(pointA, pointB, limit) {
+    if (calculateDistance(pointA, pointB) > limit) {
+      return true;
+    }
 
-                // Vérifiez que le SearchControl est bien chargé
-                if (atlas.control && atlas.control.SearchControl) {
-                    var searchControl = new atlas.control.SearchControl({
-                        language: 'fr-FR',
-                        placeholder: 'Rechercher une adresse...',
-                        showMarker: true,
-                        showPopup: true
-                    });
-                    map.controls.add(searchControl, {
-                        position: 'top-right'
-                    });
-                } else {
-                    console.error('SearchControl is not available.');
-                }
+    return false;
+  }
 
-                //Add a layer for rendering the route lines and have it render under the map labels.
-                map.layers.add(new atlas.layer.LineLayer(datasource, null, {
-                    strokeColor: ['get', 'myColor'],
-                    strokeWidth: 5,
-                    lineJoin: 'round',
-                    lineCap: 'round'
-                }), 'labels');
+  function isArraySubset(parentArray, targetArray) {
+    // Check if the length of the target array is greater than the parent array
+    if (targetArray.length > parentArray.length) return false;
 
-                //Add a layer for rendering point data.
-                map.layers.add(new atlas.layer.SymbolLayer(datasource, null, {
-                    iconOptions: {
-                        image: ['get', 'icon'],
-                        allowOverlap: true
-                },
-                    textOptions: {
-                        textField: ['get', 'title'],
-                        offset: [0, 1.2]
-                    },
-                    filter: ['any', ['==', ['geometry-type'], 'Point'], ['==', ['geometry-type'], 'MultiPoint']] //Only render Point or MultiPoints in this layer.
-                }));
+    // Use some() to iterate over the parent array
+    return parentArray.some(subArray =>
+      // Use every() to ensure all elements of the target array exist in the current sub-array
+      targetArray.every(element => subArray.includes(element))
+    );
+  }
 
-                let locations = {};
+  function permute(array) {
+    const result = [];
+    if (array.length === 1) {
+      return array.map(item => [item]);
+    }
 
-                geojson["features"].forEach((location) => {
-                    let locationToInsert = location["geometry"]["coordinates"];
-                    let studentName = location["properties"]["student_name"];
+    array.forEach((value, index) => {
+      const rest = array.slice(0, index).concat(array.slice(index + 1));
+      const forRest = permute(rest);
+      forRest.forEach(permutation => {
+        result.push([value].concat(permutation));
+      });
+    });
 
-                    for (const [tempStudentName, locationArr] of Object.entries(locations)) {
-                        if (locationArr == location["geometry"]["coordinates"]) {
-                            return;
-                        }
-                    }
+    return result;
+  }
 
-                    secondaryAddresses["features"].forEach((secondaryLocation) => {
-                        if (location["properties"]["student_id"] == secondaryLocation["properties"]["student_id"]) {
-                            locationToInsert = secondaryLocation["geometry"]["coordinates"];
-                        }
-                    });
+  async function getCoordsAndDraw(startPoint, endPoint, lineColor) {
+    var query = startPoint.geometry.coordinates[1] + "," +
+      startPoint.geometry.coordinates[0] + ":" +
+      endPoint.geometry.coordinates[1] + "," +
+      endPoint.geometry.coordinates[0];
 
-                    locations[studentName] = locationToInsert;
-                });
+    var url = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&query=${query}`;
 
-                let busDrivers = assignStudentsToDrivers(locations, 2);
-                
-                let driver_index = 0;
-                busDrivers.forEach((busDriver) => {
-                    createBusRoute(busDriver["driver_id"], busDriver["students"], driverPathColors[driver_index]);
-                    createAnimation(busDriver["driver_id"], driver_index, 25_000);
-                    driver_index++;
-                });
-            });
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "Subscription-Key": map.authentication.getToken()
         }
+      });
+      const data = await response.json();
+      var route = data.routes[0];
+      //Create an array to store the coordinates of each turn
+      var routeCoordinates = [];
+      route.legs.forEach((leg) => {
+        var legCoordinates = leg.points.map((point) => {
+          return [point.longitude, point.latitude];
+        });
+        //Add each turn to the array
+        routeCoordinates = routeCoordinates.concat(legCoordinates);
+      });
 
-        function createBusRoute(driverId, students, lineColor) {
-            exec_count = 1;
-            if (students.length > 1) {
-                let routeCombination = [
-                    {"coords": universityCoords, "point_label": "University"}, 
-                    ...students, 
-                    {"coords": universityCoords, "point_label": "University"},
-                ];
+      //Add route line to the datasource
+      datasource.add({
+        "type": "Feature",
+        "properties": {
+          "myColor": lineColor
+        },
+        "geometry": {
+          "coordinates": routeCoordinates,
+          "type": "LineString"
+        },
+      });
 
-                let busRoute = findShortestRoute(routeCombination, universityCoords);
+      return routeCoordinates; // Return the route coordinates after successful fetch and processing
+    } catch (e) {
+      console.error('There has been a problem with your fetch operation:', e);
+    }
+  }
 
-                let pointA = busRoute[0];
-                let pointB = busRoute[1];
+  async function buildPath(startCoords, targetCoords, startPointTitle, targetPointTitle, lineColor) {
+    var startPoint = new atlas.data.Feature(new atlas.data.Point(startCoords), {
+      title: startPointTitle,
+      icon: "pin-blue"
+    });
 
-                for (let i=1; i < busRoute.length; i++) {
-                    if (isPathTooFar(pointA, pointB, 200)) {
-                        pointB = busRoute[i + 1]
-                        continue;
-                    }
+    var endPoint = new atlas.data.Feature(new atlas.data.Point(targetCoords), {
+      title: targetPointTitle,
+      icon: "pin-round-blue"
+    });
 
-                    buildPath(pointA["coords"], pointB["coords"], `${pointA["point_label"]}`, `${pointB["point_label"]}`, lineColor);
+    //Add the data to the data source.
+    datasource.add([startPoint, endPoint]);
 
-                    pointA = pointB;
-                    pointB = busRoute[i + 1];
-                    exec_count++;
-                }
-            } else {
-                buildPath(universityCoords, students[0]["coords"], "University", students[0]["point_label"], lineColor);
-                exec_count++;
-                buildPath(students[0]["coords"], universityCoords, students[0]["point_label"], "University", lineColor);
-            }
-        }
+    return await getCoordsAndDraw(startPoint, endPoint, lineColor);
+  }
 
-        function assignStudentsToDrivers(locations, numberOfDrivers) {
-            let drivers = [];
+  function calculateDistance(pointA, pointB) {
+    // Calculate the Euclidean distance between two points
+    const lat1 = Math.PI * (pointA[0] / 180);
+    const lon1 = Math.PI * (pointA[1] / 180);
+    const lat2 = Math.PI * (pointB[0] / 180);
+    const lon2 = Math.PI * (pointB[1] / 180);
 
-            for (let i=0; i < numberOfDrivers; i++) {
-                drivers.push({"driver_id": i, "students": []});
-            }
-            
-            let index = 0;
-            for (const [student, coords] of Object.entries(locations)) {
-                let currentDriver = drivers[index % numberOfDrivers];
+    const dLat = lat2 - lat1;
+    const dLon = lon2 - lon1;
 
-                currentDriver["students"].push({"point_label": student, "coords": coords});
-                index++;
-            }
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-            return drivers;
-        }
+    return 6371 * c; // Radius of earth in km. Use 3956 if you want miles
+  }
 
-        function isPathTooFar(pointA, pointB, limit) {
-            if (calculateDistance(pointA, pointB) > limit) {
-                return true;
-            }
+  function calculateTotalRouteDistance(route) {
+    let totalDistance = 0;
+    for (let i = 0; i < route.length - 1; i++) {
+        totalDistance += calculateDistance(route[i], route[i+1]);
+    }
+    return totalDistance;
+  }
 
-            return false;
-        }
+  function generateRoutes(locationsInfo) {
+    let routes = [];
+    let startIndex = 0;
 
-        function isArraySubset(parentArray, targetArray) {
-            // Check if the length of the target array is greater than the parent array
-            if (targetArray.length > parentArray.length) return false;
+    const remainingLocations = locationsInfo.slice(startIndex + 1); // Exclude the starting point and itself
+    const combinations = permute(remainingLocations); // Generate all permutations of the remaining locations
 
-            // Use some() to iterate over the parent array
-            return parentArray.some(subArray => 
-                // Use every() to ensure all elements of the target array exist in the current sub-array
-                targetArray.every(element => subArray.includes(element))
-            );
-        }
+    // Add the starting point back to each combination
+    combinations.forEach(combination => {
+      const route = [locationsInfo[startIndex]].concat(combination);
+      routes.push(route);
+    });
 
-        function permute(array) {
-            const result = [];
-            if (array.length === 1) {
-                return array.map(item => [item]);
-            }
+    return routes;
+  }
 
-            array.forEach((value, index) => {
-                const rest = array.slice(0, index).concat(array.slice(index + 1));
-                const forRest = permute(rest);
-                forRest.forEach(permutation => {
-                    result.push([value].concat(permutation));
-                });
-            });
+  async function findShortestRoute(locationsInfo, startingPoint) {
+    const allRoutes = generateRoutes(locationsInfo);
+    let minDistance = Infinity;
+    let shortestRoute = [];
 
-            return result;
-        }
+    for (const route of allRoutes) {
+      let distance = 0;
+      for (let i = 0; i < route.length - 1; i++) {
+        distance += calculateDistance(route[i]["coords"], route[i + 1]["coords"]);
+      }
+      distance += calculateDistance(route[route.length - 1]["coords"], startingPoint); // Return to the starting point
 
-        function fetchAndDraw(startPoint, endPoint, lineColor) {
-            var query = startPoint.geometry.coordinates[1] + "," +
-                        startPoint.geometry.coordinates[0] + ":" +
-                        endPoint.geometry.coordinates[1] + "," +
-                        endPoint.geometry.coordinates[0];
+      if (distance < minDistance) {
+        minDistance = distance;
+        shortestRoute = route;
+      }
+    }
 
-            var url = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&query=${query}`;
+    return shortestRoute;
+  }
 
-            //Make a search route request
-            fetch(url, {
-                headers: {
-                    "Subscription-Key": map.authentication.getToken()
-                }
-            })
-            .then((response) => response.json())
-            .then((response) => {
-                var route = response.routes[0];
-                //Create an array to store the coordinates of each turn
-                var routeCoordinates = [];
-                route.legs.forEach((leg) => {
-                    var legCoordinates = leg.points.map((point) => {
-                        return [point.longitude, point.latitude];
-                    });
-                    //Add each turn to the array
-                    routeCoordinates = routeCoordinates.concat(legCoordinates);
-                });
-
-                animatedRoutePaths.push(routeCoordinates);
-
-                //Add route line to the datasource
-                datasource.add({
-                    "type": "Feature",
-                    "properties": {
-                        "myColor": lineColor
-                    },
-                    "geometry": {
-                        "coordinates": routeCoordinates,
-                        "type": "LineString"
-                    },
-                });
-            })
-            .catch((e) => {
-                console.error('There has been a problem with your fetch operation:', e);
-            });
-        }
-
-        function buildPath(startCoords, targetCoords, startPointTitle, targetPointTitle, lineColor) {
-            setTimeout(() => {
-                //Create the GeoJSON objects which represent the start and end points of the route.
-                var startPoint = new atlas.data.Feature(new atlas.data.Point(startCoords), {
-                    title: startPointTitle,
-                    icon: "pin-blue"
-                });
-
-                var endPoint = new atlas.data.Feature(new atlas.data.Point(targetCoords), {
-                    title: targetPointTitle,
-                    icon: "pin-round-blue"
-                });
-
-                //Add the data to the data source.
-                datasource.add([startPoint, endPoint]);
-
-                fetchAndDraw(startPoint, endPoint, lineColor);
-            }, exec_count*1500)
-
-
-
-
-            // map.setCamera({
-            //     bounds: atlas.data.BoundingBox.fromData([startPoint, endPoint]),
-            //     padding: 80
-            // });
-        }
-
-        function calculateDistance(pointA, pointB) {
-            // Calculate the Euclidean distance between two points
-            const lat1 = Math.PI * (pointA[0] / 180);
-            const lon1 = Math.PI * (pointA[1] / 180);
-            const lat2 = Math.PI * (pointB[0] / 180);
-            const lon2 = Math.PI * (pointB[1] / 180);
-
-            const dLat = lat2 - lat1;
-            const dLon = lon2 - lon1;
-
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(lat1) * Math.cos(lat2) *
-                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-            return 6371 * c; // Radius of earth in km. Use 3956 if you want miles
-        }
-
-        function generateRoutes(locationsInfo) {
-            let routes = [];
-            let startIndex = 0;
-
-            const remainingLocations = locationsInfo.slice(startIndex + 1); // Exclude the starting point and itself
-            const combinations = permute(remainingLocations); // Generate all permutations of the remaining locations
-
-            // Add the starting point back to each combination
-            combinations.forEach(combination => {
-                const route = [locationsInfo[startIndex]].concat(combination);
-                routes.push(route);
-            });
-
-            return routes;
-        }
-
-        function findShortestRoute(locationsInfo, startingPoint) {
-            const allRoutes = generateRoutes(locationsInfo);
-            let minDistance = Infinity;
-            let shortestRoute = [];
-
-            allRoutes.forEach(route => {
-                let distance = 0;
-                for (let i = 0; i < route.length - 1; i++) {
-                    distance += calculateDistance(route[i]["coords"], route[i + 1]["coords"]);
-                }
-                distance += calculateDistance(route[route.length - 1]["coords"], startingPoint); // Return to the starting point
-
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    shortestRoute = route;
-                }
-            });
-
-            return shortestRoute;
-        }
-
-        window.onload = function() {
-            GetMap();
-        };
-    </script>
+  window.onload = function () {
+    GetMap();
+  };
+</script>
 {% endblock %}
-
 {% block content %}
-    <style>
-        #myMap {
-            height: 400px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
+<style>
+  #myMap {
+    height: 80%;
+    min-height: 450px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
 
-        @media (max-width: 768px) {
-            #myMap {
-                height: 300px;
-            }
-        }
-    </style>
+  @media (max-width: 768px) {
+    #myMap {
+      height: 300px;
+    }
+  }
+</style>
 
-    <div id="myMap"></div>
-    <div style="position:absolute;bottom:15px;right:15px;border-radius:5px;padding:5px;background-color:white;">
-        <input type="button" value="Play" onclick="animation.play()" title="Play" />
-        <input type="button" value="Pause" onclick="animation.pause()" title="Pause" />
-        <input type="button" value="Stop" onclick="animation.stop()" title="Stop" />
-        <input type="button" value="Reset" onclick="animation.reset()" title="Reset" />
-        <br /><br />
-        Follow: <input id="followSymbol" type="checkbox" onclick="toggleFollow()" title="Follow" /><br />
-        Follow offset: <input id="followOffset" type="checkbox" onclick="toggleFollowOffset()" title="Follow offset" /><br />
-        Loop: <input id="loopAnimation" type="checkbox" onclick="toggleLooping()" title="Loop" /><br />
-        Reverse: <input id="reverseAnimation" type="checkbox" onclick="toggleReverse()" title="Reverse" />
-    </div>
+<div id="myMap"></div>
+<div
+  style="
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: white;
+  "
+>
+  <input type="button" value="Play" onclick="playAnimations()" title="Play" />
+  <input
+    type="button"
+    value="Pause"
+    onclick="pauseAnimations()"
+    title="Pause"
+  />
+  <input type="button" value="Stop" onclick="stopAnimations()" title="Stop" />
+  <input
+    type="button"
+    value="Reset"
+    onclick="resetAnimations()"
+    title="Reset"
+  />
+  <br /><br />
+  Follow:
+  <input
+    id="followSymbol"
+    type="checkbox"
+    onclick="toggleFollow()"
+    title="Follow"
+  /><br />
+  Follow offset:
+  <input
+    id="followOffset"
+    type="checkbox"
+    onclick="toggleFollowOffset()"
+    title="Follow offset"
+  /><br />
+  Loop:
+  <input
+    id="loopAnimation"
+    type="checkbox"
+    onclick="toggleLooping()"
+    title="Loop"
+  /><br />
+  Reverse:
+  <input
+    id="reverseAnimation"
+    type="checkbox"
+    onclick="toggleReverse()"
+    title="Reverse"
+  />
+</div>
 {% endblock %}
