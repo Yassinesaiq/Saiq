@@ -8,6 +8,18 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+
+'django.core.context_processors.request',
+'django.core.context_processors.debug',
+'django.core.context_processors.i18n',
+'django.core.context_processors.media',
+'django.core.context_processors.static',
+'django.contrib.auth.context_processors.auth',
+'django.contrib.messages.context_processors.messages',
+)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -84,18 +96,18 @@ WSGI_APPLICATION = 'BusesManagement.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'busbraindb',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
-    }
+DATABASES = {  
+    'default': {  
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'busbrain',  
+        'USER': 'root',  
+        'PASSWORD': 'Yassine@1960&',  
+        'HOST': '127.0.0.1',  
+        'PORT': '3306',  
+        'OPTIONS': {  
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  
+        }  
+    }  
 }
 
 
@@ -132,12 +144,21 @@ USE_TZ = True
 import os
 
 AZURE_MAPS_KEY = os.getenv('AZURE_MAPS_KEY')
+GDAL_LIBRARY_PATH = 'C:\\OSGeo4W\\bin\\gdal308.dll'
+if not os.path.exists(GDAL_LIBRARY_PATH):
+ raise Exception('GDAL library not found. Please specify the correct path.')
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Chemin absolu du répertoire des médias sur votre système de fichiers local
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -155,7 +176,7 @@ django_heroku.settings(locals())
 AZURE_MAPS_KEY = os.getenv('I1_KytP9o2H33JFvrEILeh9wVCmcp6tc5i0ECU_obg0')
 import pathlib
 print(pathlib.Path().resolve().joinpath("Logs\\hassan.log"))
-
+ 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -163,7 +184,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': pathlib.Path().resolve().joinpath("Logs\\hassan.log"),
+            'filename': 'C:\\Users\\noe_i\\Desktop\\Saiq\\hassan.log',
         },
     },
     'loggers': {

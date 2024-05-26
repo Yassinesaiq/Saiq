@@ -1,6 +1,7 @@
 {% extends "BusManagement_App/Base.html" %}
 {% load static %}
 
+
 {% block content %}
 <div class="container mt-5">
     <h1 class="dashboard-title mb-4">Tableau de Bord Directeur</h1>
@@ -39,7 +40,6 @@
             </div>
         </div>
 
-        <!-- Section Bus -->
         <div class="col-md-4 mb-3">
             <div class="card dashboard-card">
                 <div class="card-header dashboard-header">
@@ -47,11 +47,38 @@
                 </div>
                 <div class="card-body dashboard-body">
                     <a href="{% url 'ajouter_bus' %}" class="btn btn-success dashboard-btn">Ajouter un Bus</a>
-                    <!-- Add your bus list or table here -->
+                    <div class="table-responsive">
+                        <table class="table dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Marque de Bus</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bus in buses %}
+                                <tr>
+                                    <td>{{ bus.model }}</td>
+                                    <td>
+                                        {% if bus.photo %}
+                                            <img src="{{ bus.photo.url }}" alt="Photo of Bus {{ bus.number }}" class="bus-photo">
+                                        {% else %}
+                                            <p>No photo available for this bus.</p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'bus_edit' pk=bus.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                        <a href="{% url 'bus_delete' pk=bus.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Section Chauffeurs -->
         <div class="col-md-4 mb-3">
             <div class="card dashboard-card">
@@ -60,14 +87,39 @@
                 </div>
                 <div class="card-body dashboard-body">
                     <a href="{% url 'ajouter_chauffeur' %}" class="btn btn-success dashboard-btn">Ajouter un Chauffeur</a>
-                    <!-- Add your chauffeurs list or table here -->
+                    <div class="table-responsive">
+                        <table class="table dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chauffeur in chauffeurs %}
+                                <tr>
+                                    <td>{{ chauffeur.last_name }}</td>
+                                    <td>
+                                        <a href="{% url 'driver_edit' pk=chauffeur.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                        <a href="{% url 'driver_delete' pk=chauffeur.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 <style>
+    .bus-photo {
+        max-width: 100%; /* Assurez-vous que l'image ne dépasse pas la largeur de son conteneur */
+        height: auto; /* Ajustez la hauteur de l'image de manière proportionnelle */
+        border-radius: 5px; /* Ajoutez des coins arrondis à l'image */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ajoutez une ombre douce à l'image */
+    }
     body {
     background-image: url('{% static "BusManagement_App/anaback.jpg" %}');
     background-repeat: no-repeat;
@@ -80,7 +132,14 @@
         margin-bottom: 30px;
     }
 
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-gap: 30px;
+    }
+
     .dashboard-card {
+        min-width:300px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.745);
         border-radius: 30px;
     }

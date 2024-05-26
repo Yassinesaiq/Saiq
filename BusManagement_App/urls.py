@@ -8,7 +8,11 @@ from .views import parent_add, parent_edit, parent_detail, parent_delete,profil_
 from .views import modifier_parent, supprimer_parent
 from rest_framework.routers import DefaultRouter
 from .views import StudentViewSet
-from .views import get_geojson_data, my_view
+from .views import get_geojson_data
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path
+from . import views
 
 
 
@@ -28,6 +32,7 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path('dashboard/director/', views.director_dashboard, name='director_dashboard'),
     path('dashboard/parent/', views.parent_dashboard, name='parent_dashboard'),
+    path('dashboard/driver/', views.driver_dashboard, name='driver_dashboard'),
     path('ajouter_parent/', views.ajouter_parent, name='ajouter_parent'),
     path('parent/modifier/<int:parent_id>/', modifier_parent, name='modifier_parent'),
     path('parent/supprimer/<int:parent_id>/', supprimer_parent, name='supprimer_parent'),
@@ -76,7 +81,10 @@ urlpatterns = [
 
     path('api/routes/', views.get_routes_api, name='api_routes'),
     path('map/', views.my_view, name='map'),
+    path('map_parent/', views.my_view_Parent, name='map_parent'),
+    path('map_driver/', views.my_view_Driver, name='map_driver'),
     path('update_address/', views.update_address, name='update_address'),
+    path('safety_checking/', views.driver_dashboard, name='safety_checking'),
 
     path("notification/", views.process_notification, name="notification"),
     path("parent_notifications/", views.parent_notification, name="parent_notification"),
@@ -86,7 +94,5 @@ urlpatterns = [
 
 
 
-]+ router.urls
-
-    # ... other patterns for BusManagement_App
+]+ router.urls+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

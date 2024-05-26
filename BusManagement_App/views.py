@@ -34,6 +34,7 @@ from django.conf import settings
 from .models import GeocodedAddress, Notification
 import json
 import logging
+from .utils import get_geocoded_addresses_for_map, get_second_addresses_for_map
 logging.basicConfig(level=logging.INFO,format="%(asctime)s [%(levelname)s] %(message)s")
 
 # views.py
@@ -172,7 +173,6 @@ def secondaryAddressCleanup():
 
 
 def my_view(request):
-    print("********************12645444")
 
     secondaryAddressCleanup()
     # 1. View the table all records of secondary adresses
@@ -200,6 +200,55 @@ def my_view(request):
         "distance_trigger_km": 0.5
     })
 
+
+def my_view_Parent(request):
+
+    secondaryAddressCleanup()
+    # 1. View the table all records of secondary adresses
+    # 2. Remove expired rows
+
+    parent = Parent.objects.get(user=request.user)
+    geojson_data = get_geocoded_addresses_for_map(parent=parent)
+    second_addresses = get_second_addresses_for_map(parent=parent)
+    number_of_drivers = Bus.objects.count()
+
+    print(number_of_drivers)
+
+    logger.debug(f"geojson_data: {geojson_data}")
+    
+    response = HttpResponse()
+    response.set_cookie(
+        'geocode_session',
+        'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA',
+        samesite='None',  # Set SameSite attribute
+        secure=True  # Set Secure attribute
+    )
+    return render(request, 'BusManagement_App/Map_Parent.html', {'geojson_data': geojson_data, "second_addresses": second_addresses,'number_of_drivers':number_of_drivers})
+
+from datetime import date
+
+def my_view_Driver(request):
+
+    secondaryAddressCleanup()
+    # 1. View the table all records of secondary adresses
+    # 2. Remove expired rows
+
+    geojson_data = get_geocoded_addresses_for_map()
+    second_addresses = get_second_addresses_for_map()
+    number_of_drivers = Bus.objects.count()
+
+    logger.debug(f"geojson_data: {geojson_data}")
+    
+    response = HttpResponse()
+    response.set_cookie(
+        'geocode_session',
+        'fo42NIlUsCF72sSrXlAIFCukuuqZ5fN7OQgg52JLPlA',
+        samesite='None',  # Set SameSite attribute
+        secure=True  # Set Secure attribute
+    )
+    return render(request, 'BusManagement_App/Map_driver.html', {'geojson_data': geojson_data,
+                                                                  "second_addresses": second_addresses,
+                                                                  'number_of_drivers':number_of_drivers})
 
 def get_routes_api(request):
     # Votre liste de routes avec les adresses à convertir
@@ -255,7 +304,7 @@ from django.urls import reverse_lazy
 class StudentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Student
     fields = ['first_name', 'last_name', 'grade', 'address', 'distance_to_school', 'has_special_needs', 'temporary_disability']
-    template_name = 'student/student_form.html'
+    template_name = 'BusManagement_App/student_form.html'
     permission_required = 'app.add_student'
 
     def form_valid(self, form):
@@ -275,6 +324,7 @@ class StudentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
     def get_success_url(self):
         # URL de redirection après une création réussie
         return reverse_lazy('student_list')  # Remplacez 'student_list' par le nom de votre URL de liste d'élèves
+    
 
 
 class StudentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -295,11 +345,14 @@ def parent_add(request):
     if request.method == "POST":
         form = ParentForm(request.POST)
         if form.is_valid():
-            form.save()
+            parent = form.save()  # Sauvegardez le parent et récupérez l'instance
+            group = Group.objects.get(name='Parents')  # Obtenez le groupe de parents
+            group.user_set.add(parent.user)  # Ajoutez l'utilisateur parent au groupe
             return redirect('parent_list')
     else:
         form = ParentForm()
     return render(request, 'BusManagement_App/parent_form.html', {'form': form})
+
 
 
 def parent_edit(request, pk):
@@ -424,23 +477,34 @@ def user_dashboard(request):
     return render(request, 'BusManagement_App/user_dashboard.html', {'user': request.user})
 
 
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.shortcuts import render
+from .models import Parent
+from .utils import get_geocoded_addresses_for_map, get_second_addresses_for_map
+from datetime import date
+  # Ensure the function is correctly imported
 
 @login_required
 def parent_dashboard(request):
-    # Ici, vous pouvez ajouter toute logique spécifique nécessaire pour récupérer
-    # les informations que vous voulez afficher dans le tableau de bord des parents.
-    # Par exemple, récupérer les enfants associés au parent, les messages, les annonces, etc.
+    parent = Parent.objects.get(user=request.user)
+    print(f"Logged in Parent: {parent}")
+    children = Student.objects.filter(parent=parent)
+    safety_checks = SafetyCheck.objects.filter(student__in=children, check_date=date.today())
+
+    # Get the GeoJSON data filtered for the connected parent
+    geojson_data = get_geocoded_addresses_for_map(parent=parent)
+    second_addresses = get_second_addresses_for_map(parent=parent)
 
     context = {
-        # 'enfants': enfants,  # Supposons que vous ayez une liste d'enfants associés
-        # 'annonces': annonces,  # Supposons que vous ayez des annonces à afficher
-        # Ajoutez ici d'autres contextes si nécessaire
+        'geojson_data': geojson_data,
+        'second_addresses': second_addresses,  # Add secondary addresses if needed
+        'number_of_drivers': Bus.objects.count(),  # Adjust according to your needs
+        'children': children,
+        'safety_checks': safety_checks
     }
 
     return render(request, 'BusManagement_App/parent_dashboard.html', context)
+
 
 def login_user(request):
     if request.method == 'POST':
@@ -454,6 +518,9 @@ def login_user(request):
             elif user.groups.filter(name='Parents').exists():
                 login(request, user)
                 return redirect('parent_dashboard')
+            elif user.groups.filter(name='Conducteurs').exists():
+                login(request, user)
+                return redirect('driver_dashboard')
             else:
                 return HttpResponse("Vous n'avez pas les droits nécessaires.")
         else:
@@ -469,11 +536,46 @@ def director_dashboard(request):
     # Logique pour récupérer les informations nécessaires
     buses = Bus.objects.all()
     parents = Parent.objects.all()  # Récupérer tous les parents
-    # Plus de logique selon les besoins
+    chauffeurs = Driver.objects.all()  # Récupérer tous les chauffeurs
 
-    context = {'buses': buses, 'parents': parents}
+    context = {'buses': buses, 'parents': parents, 'chauffeurs': chauffeurs}
 
     return render(request, 'BusManagement_App/director_dashboard.html', context)
+
+
+from datetime import date
+
+@login_required
+def driver_dashboard(request):
+    if not request.user.groups.filter(name='Conducteurs').exists():
+        return HttpResponse("Accès refusé.")
+    try:
+        # Récupérer le bus associé au conducteur
+        bus = Driver.objects.get(user=request.user).bus
+        # Récupérer les étudiants ayant effectué des vérifications de sécurité pour ce bus
+        students = Student.objects.all()
+
+        if request.method == 'POST':
+            for student in students:
+                checked_in = request.POST.get(f'checked_in_{student.id}', 'off') == 'on'
+                SafetyCheck.objects.create(
+                    bus=bus,
+                    check_date=date.today(),
+                    is_passed=checked_in,
+                    student=student
+                )
+            return redirect('driver_dashboard')
+
+        context = {
+            'students': students,
+        }
+
+        return render(request, 'BusManagement_App/driver_dashboard.html', context)
+    except Bus.DoesNotExist:
+        # Gérer le cas où aucun bus n'est associé au conducteur
+        # Vous pouvez rediriger l'utilisateur vers une page d'erreur ou afficher un message approprié
+        return HttpResponse("Aucun bus associé à ce conducteur.")
+    
  # Assurez-vous d'avoir un formulaire ParentForm
 
 from django.contrib.auth.models import User, Group
@@ -629,7 +731,7 @@ class SafetyCheckCreateView(CreateView):
 class SafetyCheckListView(ListView):
     model = SafetyCheck
     context_object_name = 'safety_checks'
-    template_name = 'safetycheck_list.html'
+    template_name = 'Check_student.html'
 
 
 class SafetyCheckUpdateView(UpdateView):
@@ -728,22 +830,71 @@ import datetime
 from datetime import timedelta
 from django.utils import timezone
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .forms import SecondaryAddressRequestForm
+from .models import Parent, SecondaryAddressRequest, Student
+
+from django.shortcuts import get_object_or_404, render, redirect
+from django.http import Http404
+from .models import Parent, Student, SecondaryAddressRequest
+from .forms import SecondaryAddressRequestForm
+
 def update_address(request):
-    secondary_address_request = get_object_or_404(SecondaryAddressRequest)
+    parent = Parent.objects.get(user=request.user)
+    children = Student.objects.filter(parent=parent)
+
+    if children.exists():
+        try:
+            secondary_address_request = SecondaryAddressRequest.objects.get(student__in=children)
+        except SecondaryAddressRequest.DoesNotExist:
+            # If no SecondaryAddressRequest exists, create one for the first child
+            first_child = children.first()
+            secondary_address_request = SecondaryAddressRequest.objects.create(
+                student=first_child,
+                address='',
+                is_approved=False,
+                duration=0,
+                longitude=0.0,
+                latitude=0.0
+            )
+    else:
+        # Handle the case where the parent has no children
+        raise Http404("No children found for this parent.")
 
     if request.method == 'POST':
-        form = SecondaryAddressRequestForm(request.POST, instance=secondary_address_request)
+        form = SecondaryAddressRequestForm(request.POST, instance=secondary_address_request, parent=parent)
         if form.is_valid():
-            form.save()
+            # Save the form for the initial secondary address request
+            secondary_address_request = form.save()
 
-            # Update the expiration date based on the duration provided by the user
+            # Update the expiration date for the initial secondary address request
             update_expiration_date(secondary_address_request)
+
+            if children.count() > 1:
+                # Update the secondary address for all children of the parent
+                for child in children:
+                    if child != secondary_address_request.student:  # Skip the initial child already updated
+                        # Create or update the secondary address request for each child
+                        secondary_address_request,created = SecondaryAddressRequest.objects.update_or_create(
+                            student=child,
+                            defaults={
+                                'address': secondary_address_request.address,
+                                'is_approved': secondary_address_request.is_approved,
+                                'duration': secondary_address_request.duration,
+                                'longitude': secondary_address_request.longitude,
+                                'latitude': secondary_address_request.latitude
+                            }
+                        )
+                        # Update the expiration date for each secondary address request
+                        update_expiration_date(secondary_address_request)
 
             return redirect('parent_dashboard')  # Redirect to parent dashboard or any other desired URL
     else:
-        form = SecondaryAddressRequestForm(instance=secondary_address_request)
+        form = SecondaryAddressRequestForm(instance=secondary_address_request, parent=parent)
 
     return render(request, 'BusManagement_App/update_address.html', {'form': form})
+
+
 
 
 def update_expiration_date(secondary_address_request):

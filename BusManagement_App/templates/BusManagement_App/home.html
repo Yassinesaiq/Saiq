@@ -6,33 +6,34 @@
     <title>Accueil</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-    background-image: url('{% static "BusManagement_App/AA.jpg" %}');
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover; /* This will make the image cover the entire viewport */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+    
+        .bg-video {
+            position: fixed; 
+            right: 0; 
+            bottom: 0;
+            min-width: 100%; 
+            min-height: 100%;
+        }    
 
         .container {
             background: rgba(255, 255, 255, 0.501);
             border-radius: 15px;
             padding: 40px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 400px; /* Adjusted width */
+            width: 400px;
             position: absolute;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
         }
         h2 {
-            color: #007BFF; /* Adjusted text color */
-            margin-bottom: 20px; /* Spacing under the title */
-            text-align: center; /* Center align title */
+            color: #007BFF;
+            margin-bottom: 20px;
+            text-align: center;
         }
         .form-group label {
             color: #4A4A4A;
@@ -41,25 +42,39 @@
             margin-top: 20px;
         }
         .form-control {
-            border-radius: 8px; /* Rounded borders for inputs */
+            border-radius: 8px;
         }
         button {
-            background-color: #007BFF; /* Bootstrap primary color */
+            background-color: #007BFF;
             border: none;
             border-radius: 8px;
             padding: 10px;
             margin-top: 20px;
-            width: 100%; /* Button width matches container */
+            width: 100%;
         }
         button:hover {
-            background-color: #0056b3; /* Darker shade on hover */
+            background-color: #0056b3;
+        }
+        .forgot-password {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: #007BFF;
+            cursor: pointer;
+        }
+        .forgot-password:hover {
+            text-decoration: underline;
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <video autoplay muted loop class="bg-video">
+        <source src="{% static 'BusManagement_App/background_1.mp4' %}" type="video/mp4">
+        Votre navigateur ne supporte pas les vidéos HTML5.
+    </video>
     <div class="container">
         <h2>Bienvenue dans l'app BusBrain</h2>
         <form action="{% url 'login_user' %}" method="post">
@@ -74,6 +89,35 @@
             </div>
             <button type="submit" class="btn btn-primary">Connexion</button>
         </form>
+        <a class="forgot-password" data-toggle="modal" data-target="#forgotPasswordModal">Identifiant ou mot de passe oublié ?</a>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="forgotPasswordModalLabel">Identifiant ou mot de passe oublié</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Pour récupérer votre identifiant ou mot de passe, veuillez contacter l'administration de l'établissement.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('[data-toggle="modal"]').click(function() {
+                $('#forgotPasswordModal').modal('show');
+            });
+        });
+    </script>
 </body>
 </html>

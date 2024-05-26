@@ -1,14 +1,10 @@
 {% extends 'BusManagement_App/Base.html' %}
-
+{% load static %}
 {% block content %}
 
     <div class="container mt-5">
       <h2 class="mb-4">Liste des Horaires</h2>
       <a href="{% url 'add_schedule' %}" class="btn btn-success mb-3">Ajouter un nouvel horaire</a>
-
-      <!-- Container for Azure Maps -->
-      <div id="myMap" style="height: 400px; margin-bottom: 20px;"></div>
-
       <div class="card">
         <div class="card-body">
           <table class="table">
@@ -35,4 +31,12 @@
         </div>
       </div>
     </div>
+<style>
+      body {
+          background-image: url('{% static "BusManagement_App/anaback.jpg" %}');
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          background-size: cover; /* This will make the image cover the entire viewport */
+      }
+</style>
 {% endblock %}

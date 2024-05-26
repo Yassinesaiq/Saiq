@@ -14,6 +14,8 @@ class Bus(models.Model):
     number = models.CharField(max_length=5, unique=True)
     capacity = models.IntegerField()
     model = models.CharField(max_length=50)
+    photo = models.ImageField(upload_to='bus_photos/', blank=True, null=True)
+
     def __str__(self):
         return f"Bus number {self.number}"
 
@@ -21,8 +23,14 @@ class Bus(models.Model):
 
 
 class Driver(models.Model):
+    Sex_Choices = [
+        ('M', 'Masculin'),
+        ('F', 'Féminin'),
+    ]
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
+    Sex = models.CharField(max_length=10, choices=Sex_Choices, default='M', help_text="Votre identité Sexuel")
     license_number = models.CharField(max_length=20, unique=True)
     bus = models.OneToOneField(Bus, on_delete=models.SET_NULL, null=True, blank=True)  # A driver can have one bus and a bus one driver
 
@@ -39,9 +47,14 @@ class Route(models.Model):
         return f"Route {self.name}: "
 
 class Parent(models.Model):
+    Sex_Choices = [
+        ('M', 'Masculin'),
+        ('F', 'Féminin'),
+    ]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
+    Sex = models.CharField(max_length=10, choices=Sex_Choices, default='M', help_text="Votre identité Sexuel")
     cnie = models.CharField(max_length=30,null=True)  # Utilisez des minuscules ici
     email = models.EmailField(max_length=30,null=True)  # Utilisez des minuscules et le champ EmailField
 
@@ -66,8 +79,13 @@ class Student(models.Model):
         ('1RE', 'Première'),
         ('TLE', 'Terminale'),
     ]
+    Sex_Choices = [
+        ('M', 'Masculin'),
+        ('F', 'Féminin'),
+    ]
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
+    Sex = models.CharField(max_length=10, choices=Sex_Choices, default='M', help_text="Votre identité Sexuel")
     parent = models.ForeignKey(Parent, on_delete=models.CASCADE, related_name='enfants',null=True)
     grade = models.CharField(max_length=10, choices=GRADE_CHOICES, default='PS4', help_text="Niveau scolaire de l'élève")
     address = models.CharField(max_length=255)
@@ -142,6 +160,7 @@ class SecondaryAddressRequest(models.Model):
         super().save(*args, **kwargs)
 
 class SafetyCheck(models.Model):
+    student =models.ForeignKey(Student,on_delete=models.CASCADE, related_name='safety_checks',null=True)
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name='safety_checks')
     check_date = models.DateField()
     is_passed = models.BooleanField(default=True)
