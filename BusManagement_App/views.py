@@ -794,6 +794,10 @@ def parent_notification(request):
     students = parent.enfants.all()
     notifications = Notification.objects.filter(student_id__in=[student.id for student in students])
 
+    #for _notification in notifications:
+    #    if (datetime.datetime.now() - _notification.created_at).seconds >= 1:
+    #        _notification.delete()
+
     return render(request, 'BusManagement_App/parent_notification.html', {'notifications': notifications})
 
 

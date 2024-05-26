@@ -1,5 +1,5 @@
 from django.contrib import admin
-from BusManagement_App.models import Bus, Driver, Route,Student,Parent, Admin,SecondaryAddressRequest,SafetyCheck,Schedule,Tarif
+from BusManagement_App.models import Bus, Driver, Route,Student,Parent, Admin,SecondaryAddressRequest,SafetyCheck,Schedule,Tarif,Notification
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 
@@ -111,6 +111,8 @@ class SecondaryAddressRequestAdmin(admin.ModelAdmin):
     list_filter = ['is_approved']
     search_fields = ['student__first_name', 'student__last_name', 'address']
 
+class NotificationAdmin(admin.ModelAdmin):
+    list_display=['student_id','message','created_at']
    
 
 # Enregistrement des modèles avec les classes d'administration personnalisées
@@ -124,6 +126,7 @@ admin.site.register(Parent, ParentAdmin)
 admin.site.register(Schedule)
 admin.site.register(SecondaryAddressRequest, SecondaryAddressRequestAdmin)
 admin.site.register(SafetyCheck,SafetyCheckAdmin)
+admin.site.register(Notification,NotificationAdmin)
 
 
 from django.contrib import admin
