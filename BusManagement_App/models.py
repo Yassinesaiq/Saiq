@@ -14,6 +14,8 @@ class Bus(models.Model):
     number = models.CharField(max_length=5, unique=True)
     capacity = models.IntegerField()
     model = models.CharField(max_length=50)
+    photo = models.ImageField(upload_to='bus_photos/', blank=True, null=True)
+
     def __str__(self):
         return f"Bus number {self.number}"
 

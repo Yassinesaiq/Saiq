@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 
 class BusAdmin(admin.ModelAdmin):
-    list_display = ('number', 'capacity', 'model')
+    list_display = ('number', 'capacity', 'model','photo')
     search_fields = ('number', 'model')
 
 class DriverAdmin(admin.ModelAdmin):

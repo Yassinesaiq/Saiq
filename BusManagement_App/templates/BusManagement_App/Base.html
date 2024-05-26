@@ -8,10 +8,12 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <style>
-        body, html {
-            margin: 0;
-            font-family: 'Arial', sans-serif; /* Maintains a clean, professional look */
-        }
+            body {
+                background-image: url('{% static "BusManagement_App/anaback.jpg" %}');
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-size: cover; /* This will make the image cover the entire viewport */
+            }
         .sidebar {
             height: 100%;
             width: 200px;

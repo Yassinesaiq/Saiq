@@ -1,5 +1,5 @@
 {% extends "BusManagement_App/Base.html" %}
-
+{% load static %}
 {% block content %}
 <h2>Ajouter un Bus</h2>
 <form method="post">
@@ -7,4 +7,13 @@
     {{ form.as_p }}
     <button type="submit">Soumettre</button>
 </form>
+<style>
+body {
+    background-image: url('{% static "BusManagement_App/anaback.jpg" %}');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover; /* This will make the image cover the entire viewport */
+}
+</style>
+
 {% endblock %}

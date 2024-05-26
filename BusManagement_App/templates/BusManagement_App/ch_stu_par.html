@@ -1,0 +1,21 @@
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fa fa-users"></i> Enfants</h5>
+        <ul class="list-group">
+            {% for child in children %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ child.first_name }} {{ child.last_name }}
+                    {% for check in safety_checks %}
+                        {% if check.student.id == child.id %}
+                            {% if check.is_passed %}
+                                <span class="badge bg-success">Monté dans le bus</span>
+                            {% else %}
+                                <span class="badge bg-danger">Non monté dans le bus</span>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

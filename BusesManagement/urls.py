@@ -4,6 +4,13 @@ from django.urls import path, include, re_path
 from BusManagement_App import views
 from rest_framework.routers import DefaultRouter
 from BusManagement_App.views import SignupView 
+from django.urls import path,include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path
+
+
+
 
 
 router = DefaultRouter()
@@ -60,4 +67,4 @@ urlpatterns = [
     path('admin/<int:pk>/edit/', views.AdminUpdateView.as_view(), name='admin_edit'),
     path('admin/<int:pk>/delete/', views.AdminDeleteView.as_view(), name='admin_delete'),
 
-]
+]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

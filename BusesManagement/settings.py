@@ -8,6 +8,18 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+
+'django.core.context_processors.request',
+'django.core.context_processors.debug',
+'django.core.context_processors.i18n',
+'django.core.context_processors.media',
+'django.core.context_processors.static',
+'django.contrib.auth.context_processors.auth',
+'django.contrib.messages.context_processors.messages',
+)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -141,6 +153,12 @@ if not os.path.exists(GDAL_LIBRARY_PATH):
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Chemin absolu du répertoire des médias sur votre système de fichiers local
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
