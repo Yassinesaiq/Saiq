@@ -1,0 +1,24 @@
+{% extends 'BusManagement_App/parent_dashboard.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    Notifications
+                </div>
+                {% for notification in notifications %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ notification.created_at }}</h5>
+                    <p class="card-text">{{ notification.message }}</p>
+                </div>
+                {% empty %}
+                <div class="card-body">
+                    <p class="card-text">No notifications available.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

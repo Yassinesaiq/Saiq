@@ -3,3 +3,7 @@ html, body, .content {
     width: 100%;
 }
 
+#navbarNavDropdown > .navbar-nav > .nav-item.active > .nav-link {
+    font-weight: 700;
+    color: #e3e3e3;
+}
