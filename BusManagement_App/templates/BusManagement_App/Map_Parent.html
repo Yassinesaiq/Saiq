@@ -1,4 +1,4 @@
-{% extends 'BusManagement_App/parent_dashboard.html' %} {% load static %}
+{% extends 'BusManagement_App/parent_dashboard_main.html' %} {% load static %}
 {% block extra_js %}
 {% csrf_token %}
 <link
@@ -265,6 +265,7 @@
   var exec_count = 1;
 
   async function GetMap() {
+    console.log("Here");
     map = new atlas.Map('myMap', {
       center: [-5.0033, 34.0345],
       zoom: 10,
@@ -646,6 +647,7 @@
 <style>
   #myMap {
     height: 80% !important;
+    min-height: 400px;
     margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
