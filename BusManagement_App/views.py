@@ -31,7 +31,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import ChauffeurForm
 from django.http import JsonResponse
 from django.conf import settings
-from .models import GeocodedAddress
+from .models import GeocodedAddress, Notification
+import json
 import logging
 logging.basicConfig(level=logging.INFO,format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -192,7 +193,12 @@ def my_view(request):
         samesite='None',  # Set SameSite attribute
         secure=True  # Set Secure attribute
     )
-    return render(request, 'BusManagement_App/Map.html', {'geojson_data': geojson_data, "second_addresses": second_addresses, "number_of_drivers": number_of_drivers})
+    return render(request, 'BusManagement_App/Map.html', {
+        'geojson_data': geojson_data,
+        "second_addresses": second_addresses,
+        "number_of_drivers": number_of_drivers,
+        "distance_trigger_km": 0.5
+    })
 
 
 def get_routes_api(request):
@@ -680,6 +686,15 @@ def update_parent_email(request):
 
     return render(request, 'BusManagement_App/parent_parametre.html', {'form': form})
 
+@login_required
+def parent_notification(request):
+    parent = request.user.parent
+    students = parent.enfants.all()
+    notifications = Notification.objects.filter(student_id__in=[student.id for student in students])
+
+    return render(request, 'BusManagement_App/parent_notification.html', {'notifications': notifications})
+
+
 from django.http import JsonResponse
 import requests
 def get_azure_maps_token(request):
@@ -739,3 +754,18 @@ def update_expiration_date(secondary_address_request):
     # Store the expiration date in the model
     secondary_address_request.expiration_date = expiration_date
     secondary_address_request.save()
+
+
+def process_notification(request):
+    if request.method == 'POST':
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        student_id = body_data['student_id']
+        message = body_data['message']
+
+        Notification.objects.create(student_id=student_id, message=message)
+
+        return HttpResponse("Notification received and stored successfully.")
+    return HttpResponse("Invalid request method.")
+
+
