@@ -45,7 +45,7 @@ class Route(models.Model):
 
     def __str__(self):
         return f"Route {self.name}: "
-    
+
 class Parent(models.Model):
     Sex_Choices = [
         ('M', 'Masculin'),
@@ -57,7 +57,7 @@ class Parent(models.Model):
     Sex = models.CharField(max_length=10, choices=Sex_Choices, default='M', help_text="Votre identité Sexuel")
     cnie = models.CharField(max_length=30,null=True)  # Utilisez des minuscules ici
     email = models.EmailField(max_length=30,null=True)  # Utilisez des minuscules et le champ EmailField
- 
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} "
 
@@ -93,12 +93,31 @@ class Student(models.Model):
     is_eligible_for_transport = models.BooleanField(default=False)
     has_special_needs = models.BooleanField(default=False)
     temporary_disability = models.BooleanField(default=False)
+
+    def check_eligibility(self):
+     DISTANCE_CRITERIA_GENERAL = 3  # Tous les élèves à 3km ou plus sont éligibles
+     DISTANCE_CRITERIA = {
+        'PS4': 0,  # Préscolaire 4 ans toujours éligible
+        'PS5': 0.8,  # Préscolaire 5 ans à 0.8 km ou plus
+        # Ajouter des critères pour les niveaux primaire et secondaire
+        'CP': 1.6, 'CE1': 1.6, 'CE2': 1.6, 'CM1': 1.6, 'CM2': 1.6,  # Primaire
+        '6E': 1.6, '5E': 1.6, '4E': 1.6, '3E': 1.6,  # Collège
+        '2ND': 1.6, '1RE': 1.6, 'TLE': 1.6,  # Lycée
+    }
+
+
+     if self.has_special_needs or self.temporary_disability:self.is_eligible_for_transport = True
+     elif self.distance_to_school >= DISTANCE_CRITERIA_GENERAL:self.is_eligible_for_transport = True
+     elif self.grade in DISTANCE_CRITERIA and self.distance_to_school >= DISTANCE_CRITERIA[self.grade]: self.is_eligible_for_transport = True
+     else: self.is_eligible_for_transport = False
+
+     self.save()
     def __str__(self):
      return f"{self.first_name} {self.last_name} - Grade: {self.grade}  "
-    
 
-    
-    
+
+
+
 
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -106,7 +125,7 @@ class Admin(models.Model):
 
     def __str__(self):
         return f"Admin {self.user.first_name} {self.user.last_name} - Job Title: {self.job_title}"
-    
+
 class Schedule(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='schedules')
     departure_time = models.TimeField()
@@ -122,7 +141,7 @@ class Tarif(models.Model):
 
     def __str__(self):
         return f"tarif pour {self.route.name}: {self.montant}"
-    
+
 class SecondaryAddressRequest(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='secondary_address_requests')
     address = models.CharField(max_length=255)
@@ -139,7 +158,7 @@ class SecondaryAddressRequest(models.Model):
         if self.latitude is None or self.longitude is None:
             self.latitude, self.longitude = self.geocode_address() # Todo
         super().save(*args, **kwargs)
-        
+
 class SafetyCheck(models.Model):
     student =models.ForeignKey(Student,on_delete=models.CASCADE, related_name='safety_checks',null=True)
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name='safety_checks')
@@ -167,3 +186,13 @@ class GeocodedAddress(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='geocoded_addresses',null=True)
     def __str__(self):
         return f"{self.original_address}  "
+
+
+class Notification(models.Model):
+    student_id = models.IntegerField()
+    message = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"Notification {self.id} created at {self.created_at}"
+
+

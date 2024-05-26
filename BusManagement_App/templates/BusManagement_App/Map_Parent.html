@@ -1,5 +1,6 @@
-{% extends 'BusManagement_App/parent_dashboard.html' %} {% load static %}
+{% extends 'BusManagement_App/parent_dashboard_main.html' %} {% load static %}
 {% block extra_js %}
+{% csrf_token %}
 <link
   href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css"
   rel="stylesheet"
@@ -19,6 +20,67 @@
 <script>
   // Animation logic
   var animations = {};
+
+  const distanceTriggerKm = {{ distance_trigger_km }}; // Threshold distance for logging
+
+  function doNTimes(callback, times) {
+    var done = false;
+    var count = 0;
+
+    return function() {
+      if (!done) {
+        callback.apply(this, arguments);
+        count++;
+
+        if (count >= times) {
+          done = true;
+        }
+      }
+    };
+  }
+
+  function getCookie(name) {
+     let cookieValue = null;
+     if (document.cookie && document.cookie !== '') {
+         const cookies = document.cookie.split(';');
+         for (let i = 0; i < cookies.length; i++) {
+             const cookie = cookies[i].trim();
+             if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                 break;
+             }
+         }
+     }
+     return cookieValue;
+   }
+
+  function notifyStudent(student, busDriverId) {
+    let humanDistance;
+
+    if (distanceTriggerKm < 1) {
+      humanDistance = `${distanceTriggerKm * 1000}m`;
+    } else {
+      humanDistance = `${distanceTriggerKm}km`;
+    }
+
+    fetch("{% url 'notification' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          "student_id": student.point_id,
+          "message": `The Bus driver is within ${humanDistance} from ${student.point_label}.`
+        }),
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error('error', error);
+      });
+  }
 
   async function createAnimation(busDriverId, path, animationTime) {
     //Load a custom image icon into the map resources.
@@ -97,9 +159,32 @@
         animations[busDriverId]["path"] = animations[busDriverId]["path"].concat(path);
       }
 
+      let notifyFuncs = {};
+
+      busDrivers[busDriverId].students.forEach(student => {
+        notifyFuncs[student.point_id] = doNTimes(notifyStudent, 1);
+      });
+
+      animation.originalOnAnimationProgress = animation.onAnimationProgress;
+
+      // Log when the distance from a marker to a point is less than N
+      animation.onAnimationProgress = function (t) {
+        let result = animation.originalOnAnimationProgress(t);
+
+        // Check distance for each student assigned to this busDriverId and notify if within N meters
+        if (result.position) {
+          busDrivers[busDriverId].students.forEach(student => {
+            if (calculateDistance(result.position, student.coords) < distanceTriggerKm) {
+              notifyFuncs[student.point_id](student, busDriverId);
+            }
+          });
+        }
+
+        return result;
+      };
+
     });
   }
-
 
   function toggleFollow() {
     for (const [driverId, routeData] of Object.entries(animations)) {
@@ -173,12 +258,14 @@
   var map;
   var datasource;
   var geojson;
+  var busDrivers;
   var secondaryAddresses = {{ second_addresses|safe }};
   var universityCoords;
   var driverPathColors = ["#0e09ae", "#0965ae", "#5209ae", "#06a624"];
   var exec_count = 1;
 
   async function GetMap() {
+    console.log("Here");
     map = new atlas.Map('myMap', {
       center: [-5.0033, 34.0345],
       zoom: 10,
@@ -289,6 +376,7 @@
       geojson["features"].forEach((location) => {
         let locationToInsert = location["geometry"]["coordinates"];
         let studentName = location["properties"]["student_name"];
+        let studentId = location["properties"]["student_id"];
 
         for (const [tempStudentName, locationArr] of Object.entries(locations)) {
           if (locationArr == location["geometry"]["coordinates"]) {
@@ -302,15 +390,18 @@
           }
         });
 
-        locations[studentName] = locationToInsert;
+        locations[studentId] = {
+          "coords": locationToInsert,
+          "point_name": studentName
+        };
       });
 
-      let busDrivers = assignStudentsToDrivers(locations, {{ number_of_drivers }});
+      busDrivers = assignStudentsToDrivers(locations, {{ number_of_drivers }});
 
       for (let i = 0; i < busDrivers.length; i++) {
         let driverPath = await createBusRoute(busDrivers[i]["driver_id"], busDrivers[i]["students"], driverPathColors[i]);
         let totalDistance = calculateTotalRouteDistance(driverPath);
-        let routeTime = totalDistance * 5000;
+        let routeTime = totalDistance * 1000;
 
         await createAnimation(busDrivers[i]["driver_id"], driverPath, routeTime);
       }
@@ -377,10 +468,10 @@
     }
 
     let index = 0;
-    for (const [student, coords] of Object.entries(locations)) {
+    for (const [studentId, data] of Object.entries(locations)) {
       let currentDriver = drivers[index % numberOfDrivers];
 
-      currentDriver["students"].push({"point_label": student, "coords": coords});
+      currentDriver["students"].push({"point_label": data["point_name"], "coords": data["coords"], "point_id": studentId});
       index++;
     }
 
@@ -555,8 +646,8 @@
 {% block content %}
 <style>
   #myMap {
-    height: 80%;
-    min-height : 450px;
+    height: 80% !important;
+    min-height: 400px;
     margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -565,7 +656,7 @@
 
   @media (max-width: 768px) {
     #myMap {
-      height: 300px;
+      height: 300px important!;
     }
   }
 </style>
@@ -573,7 +664,7 @@
 <div id="myMap"></div>
 <div
   style="
-    position: absolute !important;
+    position: absolute;
     bottom: 15px;
     right: 15px;
     border-radius: 5px;

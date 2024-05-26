@@ -41,7 +41,7 @@ urlpatterns = [
 
 # Pour SafetyCheck
     path('safetychecks/add/', SafetyCheckCreateView.as_view(), name='add_safety_check'),
-    path('safetychecks/', SafetyCheckListView.as_view(), name='list_safety_checks'), 
+    path('safetychecks/', SafetyCheckListView.as_view(), name='list_safety_checks'),
     path('safetychecks/<int:pk>/update/', SafetyCheckUpdateView.as_view(), name='update_safety_check'),
     path('safetychecks/<int:pk>/delete/', SafetyCheckDeleteView.as_view(), name='delete_safety_check'),
 
@@ -55,7 +55,7 @@ urlpatterns = [
     path('list_schedules/', ScheduleListView.as_view(), name='list_schedules'),
     path('schedules/<int:pk>/update/', ScheduleUpdateView.as_view(), name='update_schedule'),
     path('schedules/<int:pk>/delete/', ScheduleDeleteView.as_view(), name='delete_schedule'),
-    
+
     # URLs pour Tarif
     path('tarifs/add/', TarifCreateView.as_view(), name='add_tarif'),
     path('tarifs/', TarifListView.as_view(), name='list_tarifs'),
@@ -86,10 +86,10 @@ urlpatterns = [
     path('update_address/', views.update_address, name='update_address'),
     path('safety_checking/', views.driver_dashboard, name='safety_checking'),
 
- 
+    path("notification/", views.process_notification, name="notification"),
+    path("parent_notifications/", views.parent_notification, name="parent_notification"),
 
-    
-  
+
 
 
 

@@ -31,7 +31,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import ChauffeurForm
 from django.http import JsonResponse
 from django.conf import settings
-from .models import GeocodedAddress
+from .models import GeocodedAddress, Notification
+import json
 import logging
 from .utils import get_geocoded_addresses_for_map, get_second_addresses_for_map
 logging.basicConfig(level=logging.INFO,format="%(asctime)s [%(levelname)s] %(message)s")
@@ -192,8 +193,13 @@ def my_view(request):
         samesite='None',  # Set SameSite attribute
         secure=True  # Set Secure attribute
     )
-    return render(request, 'BusManagement_App/Map.html', {'geojson_data': geojson_data, "second_addresses": second_addresses,'number_of_drivers':number_of_drivers})
-    
+    return render(request, 'BusManagement_App/Map.html', {
+        'geojson_data': geojson_data,
+        "second_addresses": second_addresses,
+        "number_of_drivers": number_of_drivers,
+        "distance_trigger_km": 0.5
+    })
+
 
 def my_view_Parent(request):
 
@@ -217,7 +223,13 @@ def my_view_Parent(request):
         samesite='None',  # Set SameSite attribute
         secure=True  # Set Secure attribute
     )
-    return render(request, 'BusManagement_App/Map_Parent.html', {'geojson_data': geojson_data, "second_addresses": second_addresses,'number_of_drivers':number_of_drivers})
+    return render(request, 'BusManagement_App/Map_Parent.html', {
+        'geojson_data': geojson_data, 
+        "second_addresses": second_addresses,
+        'number_of_drivers':number_of_drivers,
+        "distance_trigger_km": 0.5
+    })
+
 
 from datetime import date
 
@@ -497,7 +509,7 @@ def parent_dashboard(request):
         'safety_checks': safety_checks
     }
 
-    return render(request, 'BusManagement_App/parent_dashboard.html', context)
+    return render(request, 'BusManagement_App/parent_dashboard_main.html', context)
 
 
 def login_user(request):
@@ -663,7 +675,7 @@ def est_parent(user):
 @user_passes_test(est_parent)
 def vue_parent(request):
     # Logique de la vue pour les parents
-    return render(request, 'BusManagement_App/parent_dashboard.html')
+    return render(request, 'BusManagement_App/parent_dashboard_main.html')
 
 def home(request):
     return render(request, 'BusManagement_App/home.html')
@@ -782,6 +794,20 @@ def update_parent_email(request):
 
     return render(request, 'BusManagement_App/parent_parametre.html', {'form': form})
 
+@login_required
+def parent_notification(request):
+    parent = request.user.parent
+    students = parent.enfants.all()
+    notifications = list(Notification.objects.filter(student_id__in=[student.id for student in students]))
+
+    for _notification in list(notifications):
+        if (timezone.now() - _notification.created_at).total_seconds() >= 86400:
+            notifications.remove(_notification)
+            _notification.delete()
+
+    return render(request, 'BusManagement_App/parent_notification.html', {'notifications': notifications})
+
+
 from django.http import JsonResponse
 import requests
 def get_azure_maps_token(request):
@@ -890,3 +916,18 @@ def update_expiration_date(secondary_address_request):
     # Store the expiration date in the model
     secondary_address_request.expiration_date = expiration_date
     secondary_address_request.save()
+
+
+def process_notification(request):
+    if request.method == 'POST':
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        student_id = body_data['student_id']
+        message = body_data['message']
+
+        Notification.objects.create(student_id=student_id, message=message)
+
+        return HttpResponse("Notification received and stored successfully.")
+    return HttpResponse("Invalid request method.")
+
+
